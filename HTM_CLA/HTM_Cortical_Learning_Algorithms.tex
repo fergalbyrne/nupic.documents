@@ -19,8 +19,9 @@
 {\Huge Hierarchical Temporal Memory\par}
 {\Large including HTM Cortical Learning Algorithms\par}
 \vfill
-{\Large Version 0.2.1, September 12, 2011\par}
+{\Large Version 0.3.1, August 21, 2014\par}
 {\Large \textcopyright{} Numenta, Inc. 2011\par}
+{\Large \textcopyright{} The NuPIC Community 2014\par}
 \end{center}
 \vfill
 \endgroup}
@@ -67,18 +68,10 @@ algorithms that did not make it into this early draft.
 and tested in software, none of the test results are currently
 included.
 
-\item There is no description of how the algorithms can be applied to
-practical problems. Missing is a description of how you would convert
-data from a sensor or database into a distributed representation
-suitable for the algorithms.
-
 \item The algorithms are capable of on-line learning. A few details
 needed to fully implement on-line learning in some rarer cases are not
 described.
 
-\item Other planned additions include a discussion of the properties
-of sparse distributed representations, a description of applications
-and examples, and citations for the appendixes.
 \end{itemize}
 
 We are making this document available in its current form because we
@@ -120,11 +113,11 @@ provides a broad overview of HTM, outlining the importance of
 hierarchical organization, sparse distributed representations, and
 learning time-based transitions. Chapter~\ref{chapter:learning}
 describes the HTM cortical learning algorithms in
-detail. Chapters~\ref{chapter:spatial-pooling} and
-\ref{chapter:temporal-pooling} provide pseudocode for the HTM learning
-algorithms divided in two parts called the spatial pooler and temporal
-pooler. After reading chapters~\ref{chapter:learning} through
-\ref{chapter:temporal-pooling}, experienced software engineers should
+detail. Chapters~\ref{chapter:feedforward-recognition} and ~\ref{chapter:transition-prediction}
+provide pseudocode for the HTM learning
+algorithms divided in two parts called feedforward recognition and transition
+prediction. After reading chapters~\ref{chapter:learning} through
+\ref{chapter:transition-prediction}, experienced software engineers should
 be able to reproduce and experiment with the algorithms. Hopefully,
 some readers will go further and extend our work.
 
@@ -180,6 +173,10 @@ successful, as well as be successful ourselves.
 
 Numenta is based in Redwood City, California. It is privately funded.
 
+\subsection*{About NuPIC}
+
+
+
 \subsection*{About the authors}
 
 This document is a collaborative effort by the employees of
@@ -209,6 +206,8 @@ Version & Date & Changes & Principal Authors \\
 \hline
 0.2.1 & Sep 12, 2011 & 1. Read This First: Removed reference to 2010 & \\
  & & Preface: Removed Software Release section & \\
+\hline
+0.3 & Aug 22, 2014 & 1. Preface, Chapters 1,2,3,4, and Glossary: updates, corrections, new theory & Fergal~Byrne \\
 \hline
 \end{tabular}
 
@@ -395,6 +394,12 @@ of highly interconnected cells arranged in columns. ``Layer 3'' in
 neocortex is one of the primary feed-forward layers of neurons. The
 cells in an HTM region are roughly equivalent to the neurons in layer
 3 in a region of the neocortex.
+
+A fuller description of a HTM region, introduced for the first time in
+this revision, includes a model of how Layers 1, 2/3, 4, 5 and 6 combine 
+to perform sensorimotor sequence memory, feedback, behavior and hierarchy.
+We begin with a detailed description of a single-layer region, and later
+extend these concepts to the full model including all the layers.
 
 \begin{figure}
 \resizebox{\textwidth}{!}{\includegraphics{figures/Figure-1_3.pdf}}
@@ -709,7 +714,7 @@ real world, where high level concepts --- such as the name of a song
 --- change more slowly than low level concepts --- the actual notes of
 the song.
 
-\item {\bf Prediction leads to stability.}
+\item {\bf A prediction tells us if a new input is expected or unexpected.}
 
 Each HTM region is a novelty detector. Because each region predicts
 what will occur next, it ``knows'' when something unexpected
@@ -718,7 +723,7 @@ not just one. So it may not be able to predict exactly what will
 happen next, but if the next input doesn't match any of the
 predictions the HTM region will know that an anomaly has occurred.
 
-\item {\bf A prediction tells us if a new input is expected or unexpected.}
+\item {\bf Prediction helps make the system more robust to noise.}
 
 When an HTM predicts what is likely to happen next, the prediction can
 bias the system toward inferring what it predicted. For example, if an
@@ -727,8 +732,6 @@ words, and ideas are likely to be uttered next. This prediction helps
 the system fill in missing data. If an ambiguous sound arrives, the
 HTM will interpret the sound based on what it is expecting, thus
 helping inference even in the presence of noise.
-
-\item {\bf Prediction helps make the system more robust to noise.}
 
 In an HTM region, sequence memory, inference, and prediction are
 intimately integrated. They are the core functions of a region.
@@ -754,6 +757,10 @@ We expect that a motor output could be added to each HTM region within
 the currently existing framework since generating motor commands is
 similar to making predictions. However, all the implementations of
 HTMs to date have been purely sensory, without a motor component.
+
+In this revision, we introduce a new framework which explains how 
+behavior and sensory/feedforward inputs are integrated and produced in a
+fuller HTM model.
 
 \subsection*{Progress toward the implementation of HTM}
 
