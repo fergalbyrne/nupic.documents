@@ -175,6 +175,11 @@ Numenta is based in Redwood City, California. It is privately funded.
 
 \subsection*{About NuPIC}
 
+In 2013, Numenta created an Open Source project around its Numenta Platform
+for Intelligent Computing (NuPIC) software. The project has attracted many contributions
+and there are now over 1000 subscribers to thw mailing lists. The project is managed
+full-time by Numenta's Matt Taylor. For details, visit http://www.numenta.org
+
 
 
 \subsection*{About the authors}
@@ -414,7 +419,8 @@ extend these concepts to the full model including all the layers.
 \label{figure:one-region}
 \end{figure}
 
-Although an HTM region is equivalent to only a portion of a neocortical region, it can do inference and prediction on complex data streams and therefore can be useful in many problems.
+Although an HTM region is equivalent to only a portion of a neocortical region, 
+it can do inference and prediction on complex data streams and therefore can be useful in many problems.
 
 \subsection*{Sparse Distributed Representations}
 
@@ -698,23 +704,6 @@ Other times, there are repetitive phrases, and one would need to use
 the context of a far longer timeframe to know where you are in the
 speech, and therefore what comes next.
 
-\item {\bf Prediction leads to stability.}
-
-The output of a region is its prediction. One of the properties of
-HTMs is that the outputs of regions become more stable --- that is
-slower changing, longer-lasting --- the higher they are in the
-hierarchy. This property results from how a region predicts. A region
-doesn't just predict what will happen immediately next. If it can, it
-will predict multiple steps ahead in time. Let's say a region can
-predict five steps ahead. When a new input arrives, the newly
-predicted step changes but the four of the previously predicted steps
-might not. Consequently, even though each new input is completely
-different, only a part of the output is changing, making outputs more
-stable than inputs. This characteristic mirrors our experience of the
-real world, where high level concepts --- such as the name of a song
---- change more slowly than low level concepts --- the actual notes of
-the song.
-
 \item {\bf A prediction tells us if a new input is expected or unexpected.}
 
 Each HTM region is a novelty detector. Because each region predicts
@@ -723,6 +712,11 @@ happens. HTMs can predict many possible next inputs simultaneously,
 not just one. So it may not be able to predict exactly what will
 happen next, but if the next input doesn't match any of the
 predictions the HTM region will know that an anomaly has occurred.
+
+In a sensorimotor HTM, a region also uses information about motor commands
+to assist with prediction. As long as new inputs are correctly predicted, the 
+region will be able to form a stable representation of the input. If prediction 
+fails, the region will signal this change in the input.
 
 \item {\bf Prediction helps make the system more robust to noise.}
 
@@ -733,6 +727,20 @@ words, and ideas are likely to be uttered next. This prediction helps
 the system fill in missing data. If an ambiguous sound arrives, the
 HTM will interpret the sound based on what it is expecting, thus
 helping inference even in the presence of noise.
+
+\item {\bf Prediction leads to stability.}
+
+One of the properties of HTMs is that the outputs of regions become more stable --- that is
+slower changing, longer-lasting --- the higher they are in the
+hierarchy. This property results from how a region predicts.
+In the new sensorimotor theory, higher-level regions communicate a SDR
+of a slowly-changing sequence to lower layers, helping them predict the inputs
+they will receive in this context. As stated previously, each region also uses 
+motor information to help predict transitions in the patterns recognised by the region.
+This characteristic mirrors our experience of the
+real world, where high level concepts --- such as the name of a song
+--- change more slowly than low level concepts --- the actual notes of
+the song.
 
 In an HTM region, sequence memory, inference, and prediction are
 intimately integrated. They are the core functions of a region.
@@ -810,15 +818,19 @@ confusion.
 
 \subsection*{Cell states}
 
-HTM cells have three output states, active from feed-forward input,
-active from lateral input (which represents a prediction), and
-inactive. The first output state corresponds to a short burst of
-action potentials in a neuron. The second output state corresponds to
-a slower, steady rate of action potentials in a neuron. We have not
+HTM cells have two output states, active (firing) and inactive. We have not
 found a need for modeling individual action potentials or even scalar
 rates of activity beyond the two active states. The use of distributed
 representations seems to overcome the need to model scalar activity
 rates in cells.
+
+Apart from overt activity, each cell possesses a level of ``potential 
+activation'' which corresponds to the amount of depolarisation taking place
+during a unit timestep. This depolarisation arises from feed-forward input,
+as well as from lateral input (which represents a prediction), and
+these are considered separately. The former is primarily used to perform
+feedforward recognition (and thus the region's SDR) while the latter is used
+to identify cells as ``predictive''.
 
 \subsection*{Dendrite segments}
 
@@ -827,8 +839,9 @@ model. In theory each HTM cell has one proximal dendrite segment and a
 dozen or two distal dendrite segments. The proximal dendrite segment
 receives feed-forward input and the distal dendrite segments receive
 lateral input from nearby cells. A class of inhibitory cells forces
-all the cells in a column to respond to similar feed-forward input. To
-simplify, we removed the proximal dendrite segment from each cell and
+all the cells in a column to respond to similar feed-forward input. 
+
+To simplify, we removed the proximal dendrite segment from each cell and
 replaced it with a single shared dendrite segment per column of
 cells. The spatial pooler function (described below) operates on the
 shared dendrite segment, at the level of columns. The temporal pooler
@@ -851,7 +864,10 @@ all the axons that pass close enough to a dendrite segment that they
 could potentially form a synapse. The second is called ``permanence.''
 This is a scalar value assigned to each potential synapse. The
 permanence of a synapse represents a range of connectedness between an
-axon and a dendrite. Biologically, the range would go from completely
+axon and a dendrite. Biologically, this corresponds to the extent of growth
+of dendritic spines, the size and contents of the axonal terminal, and 
+the number and characteristics of receptor gates in each synapse.
+We simplify this drastically by modelling the range from completely
 unconnected, to starting to form a synapse but not connected yet, to a
 minimally connected synapse, to a large fully connected synapse. The
 permanence of a synapse is a scalar value ranging from $0.0$ to
@@ -903,7 +919,7 @@ in a 2D array but this is not a requirement. Each column in a region
 is connected to a unique subset of the input bits (usually overlapping
 with other columns but never exactly the same subset of input
 bits). As a result, different input patterns result in different
-levels of activation of the columns. The columns with the strongest
+levels of activation potential in the columns. The columns with the strongest
 activation inhibit, or deactivate, the columns with weaker
 activation. (The inhibition occurs within a radius that can span from
 very local to the entire region.) The sparse representation of the
@@ -973,17 +989,17 @@ a column get the same feed-forward input. Each cell in a column can be
 active or not active. By selecting different active cells in each
 active column, we can represent the exact same input differently in
 different contexts. A specific example might help. Say every column
-has 4 cells and the representation of every input consists of 100
+has 10 cells and the representation of every input consists of 100
 active columns. If only one cell per column is active at a time, we
-have $4^{100}$ ways of representing the exact same input. The same
+have $10^{100}$ ways of representing the exact same input. The same
 input will always result in the same 100 columns being active, but in
 different contexts different cells in those columns will be
 active. Now we can represent the same input in a very large number of
 contexts, but how unique will those different representations be?
-Nearly all randomly chosen pairs of the $4^{100}$ possible patterns
-will overlap by about 25 cells. Thus two representations of a
-particular input in different contexts will have about 25 cells in
-common and 75 cells that are different, making them easily
+Nearly all randomly chosen pairs of the $10^{100}$ possible patterns
+will overlap by about 10 cells. Thus two representations of a
+particular input in different contexts will have about 10 cells in
+common and 90 cells that are different, making them easily
 distinguishable.
 
 The general rule used by an HTM region is the following. When a column
