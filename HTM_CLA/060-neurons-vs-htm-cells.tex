@@ -1,0 +1,330 @@
+\chapter{A Comparison between Biological Neurons and HTM Cells}
+\label{appendix:compare-neuron-cell}
+
+\begin{figure}
+\resizebox{\textwidth}{!}{\includegraphics{figures/Appendix_A_1.png}}
+\end{figure}
+
+The image above shows a picture of a biological neuron on the left, a
+simple artificial neuron in the middle, and an HTM neuron or ``cell''
+on the right. The purpose of this appendix is to provide a better
+understanding of HTM cells and how they work by comparing them to real
+neurons and simpler artificial neurons.
+
+Real neurons are tremendously complicated and varied. We will focus on
+the most general principles and only those that apply to our
+model. Although we ignore many details of real neurons, the cells used
+in the HTM cortical learning algorithms are far more realistic than
+the artificial neurons used in most neural networks. All the elements
+included in HTM cells are necessary for the operation of an HTM
+region.
+
+\section*{Biological neurons}
+Neurons are the information carrying cells in the brain. The image on
+the left above is of a typical excitatory neuron. The visual
+appearance of a neuron is dominated by the branching dendrites. All
+the excitatory inputs to a neuron are via synapses aligned along the
+dendrites. In recent years our knowledge of neurons has advanced
+considerably. The biggest change has been in realizing that the
+dendrites of a neuron are not just conduits to bring inputs to the
+cell body. We now know the dendrites are complex non-linear processing
+elements in themselves. The HTM cortical learning algorithms take
+advantage of these non-linear properties.
+
+Neurons have several parts.
+
+\subsection*{Cell body}
+The cell body is the small volume in the center of the neuron. The
+output of the cell, the axon, originates at the cell body. The inputs
+to the cell are the synapses aligned along the dendrites which feed to
+the cell body.
+
+\subsection*{Proximal Dendrites}
+The dendrite branches closest to the cell body are called proximal
+dendrites. In the diagram some of the proximal dendrites are marked
+with green lines.
+
+Multiple active synapses on proximal dendrites have a roughly linear
+additive effect at the cell body. Five active synapses will lead to
+roughly five times the depolarization at the cell body compared to one
+active synapse. In contrast, if a single synapse is activated
+repeatedly by a quick succession of action potentials, the second,
+third, and subsequent action potentials have much less effect at the
+cell body, than the first.
+
+Therefore, we can say that inputs to the proximal dendrites sum
+linearly at the cell body, and that rapid spikes arriving at a single
+synapse will have only a slightly larger effect than a single spike.
+
+The feed-forward connections to a region of neocortex preferentially
+connect to the proximal dendrites. This has been reported at least for
+layer 4 neurons, the primary input layer of neurons in each region.
+
+\subsection*{Distal Dendrites}
+The dendrite branches farther from the cell body are called distal
+dendrites. In the diagram some of the distal dendrites are marked with
+blue lines.
+
+Distal dendrites are thinner than proximal dendrites. They connect to
+other dendrites at branches in the dendritic tree and do not connect
+directly to the cell body. These differences give distal dendrites
+unique electrical and chemical properties. When a single synapse is
+activated on a distal dendrite, it has a minimal effect at the cell
+body. The depolarization that occurs locally to the synapse weakens by
+the time it reaches the cell body. For many years this was viewed as a
+mystery. It seemed the distal synapses, which are the majority of
+synapses on a neuron, couldn't do much.
+
+We now know that sections of distal dendrites act as semi-independent
+processing regions. If enough synapses become active at the same time
+within a short distance along the dendrite, they can generate a
+dendritic spike that can travel to the cell body with a large
+effect. For example, twenty active synapses within 40 $\mu$m of each
+other will generate a dendritic spike.
+
+Therefore, we can say that the distal dendrites act like a set of
+threshold coincidence detectors.
+
+The synapses formed on distal dendrites are predominantly from other
+cells nearby in the region.
+
+The image shows a large dendrite branch extending upwards which is
+called the apical dendrite. One theory says that this structure allows
+the neuron to locate several distal dendrites in an area where they
+can more easily make connections to passing axons. In this
+interpretation, the apical dendrite acts as an extension of the cell.
+
+\subsection*{Synapses}
+A typical neuron might have several thousand synapses. The large
+majority (perhaps 90\%) of these will be on distal dendrites, and the
+rest will be on proximal dendrites.
+
+For many years it was assumed that learning involved strengthening and
+weakening the effect or ``weight'' of synapses. Although this effect
+has been observed, each synapse is somewhat stochastic. When
+activated, it will not reliably release a neurotransmitter. Therefore
+the algorithms used by the brain cannot depend on precision or
+fidelity of individual synapse weights.
+
+Further, we now know that entire synapses form and un-form
+rapidly. This flexibility represents a powerful form of learning and
+better explains the rapid acquisition of knowledge. A synapse can only
+form if an axon and a dendrite are within a certain distance, leading
+to the concept of ``potential'' synapses. With these assumptions,
+learning occurs largely by forming valid synapses from potential
+synapses.
+
+\subsection*{Neuron Output}
+The output of a neuron is a spike, or ``action potential,'' which
+propagates along the axon. The axon leaves the cell body and almost
+always splits in two. One branch travels horizontally making many
+connections with other cells nearby. The other branch projects to
+other layers of cells or elsewhere in the brain. In the image of the
+neuron above, the axon was not visible. We added a line and two arrows
+to represent that axon.
+
+Although the actual output of a neuron is always a spike, there are
+different views on how to interpret this. The predominant view
+(especially in regards to the neocortex) is that the rate of spikes is
+what matters. Therefore the output of a cell can be viewed as a scalar
+value.
+
+Some neurons also exhibit a ``bursting'' behavior, a short and fast
+series of a few spikes that are different than the regular spiking
+pattern.
+
+The above description of a neuron is intended to give a brief
+introduction to neurons. It focuses on attributes that correspond to
+features of HTM cells and leaves out many details. Not all the
+features just described are universally accepted. We include them
+because they are necessary for our models. What is known about neurons
+could easily fill several books, and active research on neurons
+continues today.
+
+\section*{Simple artificial neurons}
+The middle image at the beginning of this Appendix shows a neuron-like
+element used in many classic artificial neural network models. These
+artificial neurons have a set of synapses each with a weight. Each
+synapse receives a scalar activation, which is multiplied by the
+synapse weight. The output of all the synapses is summed in a
+non-linear fashion to produce an output of the artificial
+neuron. Learning occurs by adjusting the weights of the synapses and
+perhaps the non- linear function.
+
+This type of artificial neuron, and variations of it, has proven
+useful in many applications as a valuable computational tool. However,
+it doesn't capture much of the complexity and processing power of
+biological neurons. If we want to understand and model how an ensemble
+of real neurons works in the brain we need a more sophisticated neuron
+model.
+
+\section*{HTM cells}
+In our illustration, the image on the right depicts a cell used in the
+HTM cortical learning algorithms. An HTM cell captures many of the
+important capabilities of real neurons but also makes several
+simplifications.
+
+\subsection*{Proximal Dendrite}
+Each HTM cell has a single proximal dendrite. All feed-forward inputs
+to the cell are made via synapses (shown as green dots). The activity
+of synapses is linearly summed to produce a feed-forward activation
+for the cell.
+
+We require that all cells in a column have the same feed-forward
+response. In real neurons this would likely be done by a type of
+inhibitory cell. In HTMs we simply force all the cells in a column to
+share a single proximal dendrite.
+
+To avoid having cells that never win in the competition with
+neighboring cells, an HTM cell will boost its feed-forward activation
+if it is not winning enough relative to its neighbors. Thus there is a
+constant competition between cells. Again, in an HTM we model this as
+a competition between columns, not cells. This competition is not
+illustrated in the diagram.
+
+Finally, the proximal dendrite has an associated set of potential
+synapses which is a subset of all the inputs to a region. As the cell
+learns, it increases or decreases the ``permanence'' value of all the
+potential synapses on the proximal dendrite. Only those potential
+synapses that are above a threshold are valid.
+
+As mentioned earlier, the concept of potential synapses comes from
+biology where it refers to axons and dendrites that are close enough
+to form a synapse. We extend this concept to a larger set of potential
+connections for an HTM cell. Dendrites and axons on biological neurons
+can grow and retract as learning occurs and therefore the set of
+potential synapses changes with growth. By making the set of potential
+synapses on an HTM cell large, we roughly achieve the same result as
+axon and dendrite growth. The set of potential synapses is not shown.
+
+The combination of competition between columns, learning from a set of
+potential synapses, and boosting underutilized columns gives a region
+of HTM neurons a powerful plasticity also seen in brains. An HTM
+region will automatically adjust what each column represents (via
+changes to the synapses on the proximal dendrites) if the input
+changes, or the number of columns increases or decreases.
+
+\subsection*{Distal Dendrites}
+Each HTM cell maintains a list of distal dendrite segments. Each
+segment acts like a threshold detector. If the number of active
+synapses on any segment (shown as blue dots on the earlier diagram) is
+above a threshold, the segment becomes active, and the associated cell
+enters the predictive state. The predictive state of a cell is the OR
+of the activations of its segments.
+
+A dendrite segment remembers the state of the region by forming
+connections to cells that were active together at a point in time. The
+segment remembers a state that precedes the cell becoming active due
+to feed-forward input. Thus the segment is looking for a state that
+predicts that its cell will become active. A typical threshold for a
+dendrite segment is 15. If 15 valid synapses on a segment are active
+at once, the dendrite becomes active. There might be hundreds or
+thousands of cells active nearby, but connecting to only 15 is
+sufficient to recognize the larger pattern.
+
+Each distal dendrite segment also has an associated set of potential
+synapses. The set of potential synapses is a subset of all the cells
+in a region. As the segment learns, it increases or decreases the
+permanence value of all its potential synapses. Only those potential
+synapses that are above a threshold are valid.
+
+In one implementation, we use a fixed number of dendrite segments per
+cell. In another implementation, we add and delete segments while
+training. Both methods can work. If we have a fixed number of dendrite
+segments per cell, it is possible to store several different sets of
+synapses on the same segment. For example, say we have 20 valid
+synapses on a segment and a threshold of 15. (In general we want the
+threshold to be less than the number of synapses to improve noise
+immunity.) The segment can now recognize one particular state of the
+cells nearby. What would happen if we added another 20 synapses to the
+same segment representing an entirely different state of cells nearby?
+It introduces the possibility of error because the segment could add 8
+active synapses from one pattern and 7 active synapses from the other
+and become active incorrectly. We have found experimentally that up to
+20 different patterns can be stored on one segment before errors
+occur. Therefore an HTM cell with a dozen dendrite segments can
+participate in many different predictions.
+
+\subsection*{Synapses}
+
+Synapses on an HTM cell have a binary weight. There is nothing in the
+HTM model that precludes scalar synapse weights, but due to the use of
+sparse distributed patterns we have not yet had a need to use scalar
+weights.
+
+However, synapses on an HTM cell have a scalar value called
+``permanence'' which is adjusted during learning. A 0.0 permanence value
+represents a potential synapse which is not valid and has not
+progressed at all towards becoming a valid synapse. A permanence value
+above a threshold (typically 0.2) represents a synapse that has just
+connected but could easily be un-connected. A high permanence value,
+for example 0.9, represents a synapse that is connected and cannot
+easily be un- connected.
+
+The number of valid synapses on the proximal and distal dendrite
+segments of an HTM cell is not fixed. It changes as the cell is
+exposed to patterns. For example, the number of valid synapses on the
+distal dendrites is dependent on the temporal structure of the
+data. If there are no persistent temporal patterns in the input to the
+region, then all the synapses on distal segments would have low
+permanence values and very few synapses would be valid. If there is a
+lot of temporal structure in the input stream, then we will find many
+valid synapses with high permanence.
+
+\subsection*{Cell Output}
+
+An HTM cell has two different binary outputs: 1) the cell is active
+due to feed- forward input (via the proximal dendrite), and 2) the
+cell is active due to lateral connections (via the distal dendrite
+segments). The former is called the ``active state'' and the latter is
+called the ``predictive state.''
+
+In the earlier diagram, the two outputs are represented by the two
+lines exiting the square cell body. The left line is the feed-forward
+active state, while the right line is the predictive state.
+
+Only the feed-forward active state is connected to other cells in the
+region, ensuring that predictions are always based on the current
+input (plus context). We don't want to make predictions based on
+predictions. If we did, almost all the cells in the region would be in
+the predictive state after a few iterations.
+
+The output of the region is a vector representing the state of all the
+cells. This vector becomes the input to the next region of the
+hierarchy if there is one. This output is the OR of the active and
+predictive states. By combining both active and predictive states, the
+output of our region will be more stable (slower changing) than the
+input. Such stability is an important property of inference in a
+region.
+
+\section*{Suggested reading}
+
+We are often asked to suggest reading materials to learn more about
+neuroscience. The field of neuroscience is so large that a general
+introduction requires looking at many different sources. New findings
+are published in academic journals which are both hard to read and
+hard to get access to if you don't have a university affiliation.
+
+Here are two readily available books that a dedicated reader might
+want to look at which are relevant to the topics in this appendix.
+
+\begin{quote}
+Stuart, Greg, Spruston, Nelson, H\"ausser, Michael, {\em Dendrites},
+second edition (New York: Oxford University Press, 2008)
+\end{quote}
+
+This book is a good source on everything about dendrites. Chapter~16
+discusses the non-linear properties of dendrite segments used in the
+HTM cortical learning algorithms. It is written by Bartlett Mel who
+has done much of the thinking in this field.
+
+\begin{quote}
+Mountcastle, Vernon B.~{\em Perceptual Neuroscience: The Cerebral
+  Cortex} (Cambridge, Mass.: Harvard University Press, 1998)
+\end{quote}
+
+This book is a good introduction to everything about the
+neocortex. Several of the chapters discuss cell types and their
+connections. You can get a good sense of cortical neurons and their
+connections, although it is too old to cover the latest knowledge of
+dendrite properties.

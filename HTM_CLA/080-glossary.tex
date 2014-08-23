@@ -1,0 +1,138 @@
+
+\chapter*{Glossary}
+\addcontentsline{toc}{chapter}{Glossary}
+\label{glossary}
+
+\begin{description}
+\item[Active State]{a state in which Cells are active due to
+  Feed-Forward input}
+
+\item[Bottom-Up]{synonym to Feed-Forward}
+
+\item[Cells]{HTM equivalent of a Neuron\\{\em Cells are organized into
+    columns in HTM regions.}}
+
+\item[Coincident Activity]{two or more Cells are active at the same
+  time}
+
+\item[Column]{a group of one or more Cells that function as a unit in
+  an HTM Region\\{\em Cells within a column represent the same
+    feed-forward input, but in different contexts.}}
+
+\item[Dendrite Segment]{a unit of integration of Synapses associated
+  with Cells and Columns\\{\em HTMs have two different types of
+    dendrite segments. One is associated with lateral connections to a
+    cell. When the number of active synapses on the dendrite segment
+    exceeds a threshold, the associated cell enters the predictive
+    state. The other is associated with feed-forward connections to a
+    column. The number of active synapses is summed to generate the
+    feed-forward activation of a column.}}
+
+\item[Desired Density]{desired percentage of Columns active due to
+  Feed-Forward input to a Region\\{\em The percentage only applies
+    within a radius that varies based on the fan-out of feed-forward
+    inputs. It is ``desired'' because the percentage varies some based
+    on the particular input.}}
+
+\item[Feed-Forward]{moving in a direction away from an input, or from
+  a lower Level to a higher Level in a Hierarchy (sometimes called
+  Bottom-Up)}
+
+\item[Feedback]{moving in a direction towards an input, or from a
+  higher Level to a lower level in a Hierarchy (sometimes called
+  Top-Down)}
+
+\item[First Order Prediction]{a prediction based only on the current
+  input and not on the prior inputs --- compare to Variable Order
+  Prediction}
+
+\item[Hierarchical Temporal Memory (HTM]{a technology that replicates
+  some of the structural and algorithmic functions of the neocortex}
+
+\item[Hierarchy]{a network of connected elements where the connections
+  between the elements are uniquely identified as Feed-Forward or
+  Feedback}
+
+\item[HTM Cortical Learning Algorithms]{the suite of functions for
+  Spatial Pooling, Temporal Pooling, and learning and forgetting that
+  comprise an HTM Region, also referred to as HTM Learning Algorithms}
+
+\item[HTM Network]{a Hierarchy of HTM Regions}
+
+\item[HTM Region]{the main unit of memory and Prediction in an
+  HTM\\{\em An HTM region is comprised of a layer of highly
+    interconnected cells arranged in columns. An HTM region today has
+    a single layer of cells, whereas in the neocortex (and ultimately
+    in HTM), a region will have multiple layers of cells. When
+    referred to in the context of its position in a hierarchy, a
+    region may be referred to as a level.}}
+
+\item[Inference]{recognizing a spatial and temporal input pattern as
+  similar to previously learned patterns}
+
+\item[Inhibition Radius]{defines the area around a Column that it
+  actively inhibits}
+
+\item[Lateral Connections]{connections between Cells within the same
+  Region}
+
+\item[Level]{an HTM Region in the context of the Hierarchy}
+
+\item[Neuron]{an information processing Cell in the brain\\{\em In
+    this document, we use the word neuron specifically when referring
+    to biological cells, and ``cell'' when referring to the HTM unit
+    of computation.}}
+
+\item[Permanence]{a scalar value which indicates the connection state
+  of a Potential Synapse\\{\em A permanence value below a threshold
+    indicates the synapse is not formed. A permanence value above the
+    threshold indicates the synapse is valid. Learning in an HTM
+    region is accomplished by modifying permanence values of potential
+    synapses.}}
+
+\item[Potential Synapse]{the subset of all Cells that could
+  potentially form Synapses with a particular Dendrite Segment\\{\em
+    Only a subset of potential synapses will be valid synapses at any
+    time based on their permanence value.}}
+
+\item[Prediction]{activating Cells (into a predictive state) that will
+  likely become active in the near future due to Feed-Forward
+  input\\{\em An HTM region often predicts many possible future inputs
+    at the same time.}}
+
+\item[Receptive Field]{the set of inputs to which a Column or Cell is
+  connected\\{\em If the input to an HTM region is organized as a 2D
+    array of bits, then the receptive field can be expressed as a
+    radius within the input space.}}
+
+\item[Sensor]{a source of inputs for an HTM Network}
+
+\item[Sparse Distributed Representation]{representation comprised of
+  many bits in which a small percentage are active and where no single
+  bit is sufficient to convey meaning}
+
+\item[Spatial Pooling]{the process of forming a sparse distributed
+  representation of an input\\{\em One of the properties of spatial
+    pooling is that overlapping input patterns map to the same sparse
+    distributed representation.}}
+
+\item[Sub-Sampling]{recognizing a large distributed pattern by
+  matching only a small subset of the active bits in the large
+  pattern}
+
+\item[Synapse]{connection between Cells formed while learning}
+
+\item[Temporal Pooling]{the process of forming a representation of a
+  sequence of input patterns where the resulting representation is
+  more stable than the input}
+
+\item[Top-Down]{synonym for Feedback}
+
+\item[Variable Order Prediction]{a prediction based on varying amounts
+  of prior context --- compare to First Order Prediction\\{\em It is
+    called ``variable'' because the memory to maintain prior context
+    is allocated as needed. Thus a memory system that implements
+    variable order prediction can use context going way back in time
+    without requiring exponential amounts of memory.}}
+
+\end{description}

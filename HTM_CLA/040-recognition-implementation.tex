@@ -1,0 +1,202 @@
+\chapter{Pattern Memory Implementation and Pseudocode}
+\label{chapter:pattern-memory}
+
+This chapter contains the detailed pseudocode for a first
+implementation of the spatial pooler function. The input to this code
+is an array of bottom-up binary inputs from sensory data or the
+previous level. The code computes activeColumns(t) --- the list of
+columns that win due to the bottom-up input at time t. This list is
+then sent as input to the temporal pooler routine described in the
+next chapter, i.e., activeColumns(t) is the output of the spatial
+pooling routine.
+
+The pseudocode is split into three distinct phases that occur in
+sequence:
+
+\begin{description}
+\item[Phase 1:] compute the overlap with the current input for each column
+\item[Phase 2:] compute the winning columns after inhibition
+\item[Phase 3:] update synapse permanence and internal variables
+\end{description}
+
+Although spatial pooler learning is inherently online, you can turn
+off learning by simply skipping Phase 3.
+
+The rest of the chapter contains the pseudocode for each of the three
+steps. The various data structures and supporting routines used in the
+code are defined at the end.
+
+\subsection*{Initialization}
+
+Prior to receiving any inputs, the region is initialized by computing
+a list of initial potential synapses for each column. This consists of
+a random set of inputs selected from the input space. Each input is
+represented by a synapse and assigned a random permanence value. The
+random permanence values are chosen with two criteria. First, the
+values are chosen to be in a small range around connectedPerm (the
+minimum permanence value at which a synapse is considered
+``connected''). This enables potential synapses to become connected (or
+disconnected) after a small number of training iterations. Second,
+each column has a natural center over the input region, and the
+permanence values have a bias towards this center (they have higher
+values near the center).
+
+\subsection*{Phase 1: Overlap}
+
+Given an input vector, the first phase calculates the overlap of each
+column with that vector. The overlap for each column is simply the
+number of connected synapses with active inputs, multiplied by its
+boost. If this value is below minOverlap, we set the overlap score to
+zero.  ￼ ￼
+
+\begin{lstlisting}[numbers=left]
+for c in columns
+
+  overlap(c) = 0
+  for s in connectedSynapses(c)
+    overlap(c) = overlap(c) + input(t, s.sourceInput)
+
+  if overlap(c) < minOverlap then
+    overlap(c) = 0
+  else
+    overlap(c) = overlap(c) * boost(c)
+\end{lstlisting}
+
+\subsection*{Phase 2: Inhibition}
+The second phase calculates which columns remain as winners after the
+inhibition step. desiredLocalActivity is a parameter that controls the
+number of columns that end up winning. For example, if
+desiredLocalActivity is 10, a column will be a winner if its overlap
+score is greater than the score of the 10th highest column within its
+inhibition radius.
+
+\begin{lstlisting}[numbers=left,firstnumber=11,mathescape]
+for c in columns
+
+  minLocalActivity = kthScore(neighbors(c), desiredLocalActivity)
+  if overlap(c) > 0 and overlap(c) $\geq$ minLocalActivity then
+    activeColumns(t).append(c)
+
+\end{lstlisting}￼
+
+\subsection*{Phase 3: Learning}
+The third phase performs learning; it updates the permanence values of
+all synapses as necessary, as well as the boost and inhibition radius.
+
+The main learning rule is implemented in lines 20--26. For winning
+columns, if a synapse is active, its permanence value is incremented,
+otherwise it is decremented. Permanence values are constrained to be
+between 0 and 1.
+
+Lines 28--36 implement boosting. There are two separate boosting
+mechanisms in place to help a column learn connections. If a column
+does not win often enough (as measured by activeDutyCycle), its
+overall boost value is increased (line 30--32). Alternatively, if a
+column's connected synapses do not overlap well with any inputs often
+enough (as measured by overlapDutyCycle), its permanence values are
+boosted (line 34--36). Note: once learning is turned off, boost(c) is
+frozen.  Finally, at the end of Phase 3 the inhibition radius is
+recomputed (line 38).
+
+\begin{lstlisting}[numbers=left,firstnumber=18]
+for c in activeColumns(t)
+
+  for s in potentialSynapses(c)
+    if active(s) then
+      s.permanence += permanenceInc
+      s.permanence = min(1.0, s.permanence)
+    else
+      s.permanence -= permanenceDec
+      s.permanence = max(0.0, s.permanence)
+
+for c in columns:
+
+  minDutyCycle(c) = 0.01 * maxDutyCycle(neighbors(c))
+  activeDutyCycle(c) = updateActiveDutyCycle(c)
+  boost(c) = boostFunction(activeDutyCycle(c), minDutyCycle(c))
+
+  overlapDutyCycle(c) = updateOverlapDutyCycle(c)
+  if overlapDutyCycle(c) < minDutyCycle(c) then
+    increasePermanences(c, 0.1*connectedPerm)
+
+inhibitionRadius = averageReceptiveFieldSize()
+
+\end{lstlisting}
+
+\subsection*{Supporting data structures and routines}
+
+The following variables and data structures are used in the pseudocode:
+
+\begin{description}
+\item[columns] List of all columns.
+\item[input(t,j)] The input to this level at time t. input(t, j) is 1
+  if the j'th input is on.
+\item[overlap(c)] The spatial pooler overlap of column c with a
+  particular input pattern.
+\item[activeColumns(t)] List of column indices that are winners due to
+  bottom-up input.
+\item[desiredLocalActivity] A parameter controlling the number of
+  columns that will be winners after the inhibition step.
+\item[inhibitionRadius] Average connected receptive field size of the
+  columns.
+\item[neighbors(c)] A list of all the columns that are within
+  inhibitionRadius of column c.
+\item[minOverlap] A minimum number of inputs that must be active for a
+  column to be considered during the inhibition step.
+\item[boost(c)] The boost value for column c as computed during
+  learning---used to increase the overlap value for inactive columns.
+\item[synapse] A data structure representing a synapse---contains a
+  permanence value and the source input index.
+\item[connectedPerm] If the permanence value for a synapse is greater
+  than this value, it is said to be connected.
+\item[potentialSynapses(c)] The list of potential synapses and their
+  permanence values.
+\item[connectedSynapses(c)] A subset of potentialSynapses(c) where the
+  permanence value is greater than connectedPerm. These are the
+  bottom-up inputs that are currently connected to column c.
+\item[permanenceInc] Amount permanence values of synapses are
+  incremented during learning.
+\item[permanenceDec] Amount permanence values of synapses are
+  decremented during learning.
+\item[activeDutyCycle(c)] A sliding average representing how often
+  column c has been active after inhibition (e.g. over the last 1000
+  iterations).
+\item[overlapDutyCycle(c)] A sliding average representing how often
+  column c has had significant overlap (i.e., greater than minOverlap)
+  with its inputs (e.g. over the last 1000 iterations).
+\item[minDutyCycle(c)] A variable representing the minimum desired
+  firing rate for a cell. If a cell's firing rate falls below this
+  value, it will be boosted. This value is calculated as 1\% of the
+  maximum firing rate of its neighbors.
+\end{description}
+
+The following supporting routines are used in the above code.
+
+\begin{description}
+\item[kthScore(cols,k)] Given the list of columns, return the k'th
+  highest overlap value.
+
+\item[updateActiveDutyCycle(c)] Computes a moving average of how often
+  column c has been active after inhibition.
+
+\item[updateOverlapDutyCycle(c)] Computes a moving average of how
+  often column c has overlap greater than minOverlap.
+
+\item[averageReceptiveFieldSize()] The radius of the average connected
+  receptive field size of all the columns. The connected receptive
+  field size of a column includes only the connected synapses (those
+  with permanence values $\ge$ connectedPerm). This is used to determine
+  the extent of lateral inhibition between columns.
+
+\item[maxDutyCycle(cols)] Returns the maximum active duty cycle of the
+  columns in the given list of columns.
+
+\item[increasePermanences(c, s)] Increase the permanence value of
+  every synapse in column c by a scale factor s.
+
+\item[boostFunction(c)] Returns the boost value of a column. The boost
+  value is a scalar $\ge 1$. If activeDutyCyle(c) is above
+  minDutyCycle(c), the boost value is 1. The boost increases linearly
+  once the column's activeDutyCyle starts falling below its
+  minDutyCycle.
+\end{description}

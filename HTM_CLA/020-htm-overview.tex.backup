@@ -1,0 +1,568 @@
+\chapter{HTM Overview}
+\label{chapter:overview}
+
+Hierarchical Temporal Memory (HTM) is a machine learning technology
+that aims to capture the structural and algorithmic properties of the
+neocortex.
+
+The neocortex is the seat of intelligent thought in the mammalian
+brain. High level vision, hearing, touch, movement, language, and
+planning are all performed by the neocortex. Given such a diverse
+suite of cognitive functions, you might expect the neocortex to
+implement an equally diverse suite of specialized neural
+algorithms. This is not the case. The neocortex displays a remarkably
+uniform pattern of neural circuitry. The biological evidence suggests
+that the neocortex implements a common set of algorithms to perform
+many different intelligence functions.
+
+HTM provides a theoretical framework for understanding the neocortex
+and its many capabilities. To date we have implemented a small subset
+of this theoretical framework. Over time, more and more of the theory
+will be implemented. Today we believe we have implemented a sufficient
+subset of what the neocortex does to be of commercial and scientific
+value.
+
+Programming HTMs is unlike programming traditional computers. With
+today's computers, programmers create specific programs to solve
+specific problems. By contrast, HTMs are trained through exposure to a
+stream of sensory data. The HTM's capabilities are determined largely
+by what it has been exposed to.
+
+HTMs can be viewed as a type of neural network. By definition, any
+system that tries to model the architectural details of the neocortex
+is a neural network. However, on its own, the term ``neural network'' is
+not very useful because it has been applied to a large variety of
+systems. HTMs model neurons (called cells when referring to HTM),
+are arranged in columns, in layers, in regions, and in a
+hierarchy. The details matter, and in this regard HTMs are a new form
+of neural network.
+
+As the name implies, HTM is fundamentally a memory based system. HTM
+networks are trained on lots of time varying data, and rely on storing
+a large set of patterns and sequences. The way data is stored and
+accessed is logically different from the standard model used by
+programmers today. Classic computer memory has a flat organization and
+does not have an inherent notion of time. A programmer can implement
+any kind of data organization and structure on top of the flat
+computer memory. They have control over how and where information is
+stored. By contrast, HTM memory is more restrictive. HTM memory has a
+hierarchical organization and is inherently time based. Information is
+always stored in a distributed fashion. A user of an HTM specifies the
+size of the hierarchy and what to train the system on, but the HTM
+controls where and how information is stored. Although HTM networks
+are substantially different than classic computing, we can use general
+purpose computers to model them as long as we incorporate the key
+functions of hierarchy, time and sparse distributed representations
+(described in detail later). In a process which has already begun, specialized
+hardware is being created to generate purpose-built HTM networks.
+
+In this document, we often illustrate HTM properties and principles
+using examples drawn from human vision, touch, hearing, language, and
+behavior. Such examples are useful because they are intuitive and
+easily grasped. However, it is important to keep in mind that HTM
+capabilities are general. They can just as easily be exposed to
+non-human sensory input streams, such as radar and infrared, or to
+purely informational input streams such as financial market data,
+weather data, Web traffic patterns, or text. HTMs are learning and
+prediction machines that can be applied to many types of problems.
+
+\section*{HTM principles}
+
+In this section, we cover some of the core principles of HTM: why
+hierarchical organization is important, how HTM regions are
+structured, why data is stored as sparse distributed representations,
+and why time-based information is critical.
+
+\subsection*{Hierarchy}
+
+An HTM network consists of regions arranged in a hierarchy. The region
+is the main unit of memory and prediction in an HTM, and will be
+discussed in detail in the next section. Typically, each HTM region
+represents one level in the hierarchy. As you ascend the hierarchy
+there is always convergence, multiple elements in a child region
+converge onto an element in a parent region. However, due to feedback
+connections, information also diverges as you descend the
+hierarchy. (A ``region'' and a ``level'' are almost synonymous. We use
+the word ``region'' when describing the internal function of a region,
+whereas we use the word ``level'' when referring specifically to the
+role of the region within the hierarchy.)
+
+\begin{figure}
+\resizebox{\textwidth}{!}{\includegraphics{figures/Figure-1_1.pdf}}
+\caption{Simplified diagram of four HTM regions arranged in a
+  four-level hierarchy, communicating information within levels,
+  between levels, and to/from outside the hierarchy.}
+\label{figure:region-hierarchy}
+\end{figure}
+
+It is possible to combine multiple HTM networks. This kind of
+structure makes sense if you have data from more than one source or
+sensor. For example, one network might be processing auditory
+information and another network might be processing visual
+information. There is convergence within each separate network, with
+the separate branches converging only towards the top.
+
+\begin{figure}
+\resizebox{\textwidth}{!}{\includegraphics{figures/Figure-1_2.pdf}}
+\caption{Converging networks from different sensors}
+\label{figure:multimodal-convergence}
+\end{figure}
+
+The benefit of hierarchical organization is efficiency. It
+significantly reduces training time and memory usage because patterns
+learned at each level of the hierarchy are reused when combined in
+novel ways at higher levels. For an illustration, let's consider
+vision. At the lowest level of the hierarchy, your brain stores
+information about tiny sections of the visual field such as edges and
+corners. An edge is a fundamental component of many objects in the
+world. These low-level patterns are recombined at mid-levels into more
+complex components such as curves and textures. An arc can be the edge
+of an ear, the top of a steering wheel or the rim of a coffee
+cup. These mid-level patterns are further combined to represent
+high-level object features, such as heads, cars or houses. To learn a
+new high level object you don't have to relearn its components.
+
+As another example, consider that when you learn a new word, you don't
+need to relearn letters, syllables, or phonemes.
+
+Sharing representations in a hierarchy also leads to generalization of
+expected behavior. When you see a new animal, if you see a mouth and
+teeth you will predict that the animal eats with his mouth and that it
+might bite you. The hierarchy enables a new object in the world to
+inherit the known properties of its sub-components.
+
+How much can a single level in an HTM hierarchy learn? Or put another
+way, how many levels in the hierarchy are necessary? There is a
+tradeoff between how much memory is allocated to each level and how
+many levels are needed. Fortunately, HTMs automatically learn the best
+possible representations at each level given the statistics of the
+input and the amount of resources allocated. If you allocate more
+memory to a level, that level will form representations that are
+larger and more complex, which in turn means fewer hierarchical levels
+may be necessary. If you allocate less memory, a level will form
+representations that are smaller and simpler, which in turn means more
+hierarchical levels may be needed.
+
+Up to this point we have been describing difficult problems, such as
+vision inference (``inference'' is similar to pattern
+recognition). But many valuable problems are simpler than vision, and
+a single HTM region might prove sufficient. For example, we applied an
+HTM to predicting where a person browsing a website is likely to click
+next. This problem involved feeding the HTM network streams of web
+click data. In this problem there was little or no spatial hierarchy,
+the solution mostly required discovering the temporal statistics,
+i.e., predicting where the user would click next by recognizing typical
+user patterns. The temporal learning algorithms in HTMs are ideal for
+such problems.
+
+In summary, hierarchies reduce training time, reduce memory usage, and
+introduce a form of generalization. However, many simpler prediction
+problems can be solved with a single HTM region.
+
+\subsection*{Regions}
+
+The notion of regions wired in a hierarchy comes from biology. The
+neocortex is a large sheet of neural tissue about 2mm
+thick. Biologists divide the neocortex into different areas or
+``regions'' primarily based on how the regions connect to each
+other. Some regions receive input directly from the senses and other
+regions receive input only after it has passed through several other
+regions. It is the region-to-region connectivity that defines the
+hierarchy.
+
+All neocortical regions look similar in their details. They vary in
+size and where they are in the hierarchy, but otherwise they are
+similar. If you take a slice across the 2mm thickness of a neocortical
+region, you will see six layers, five layers of cells and one
+non-cellular layer (there are a few exceptions but this is the general
+rule). Each layer in a neocortical region has many interconnected
+cells arranged in columns. HTM regions also are comprised of a sheet
+of highly interconnected cells arranged in columns. ``Layer 3'' in
+neocortex is one of the primary feed-forward layers of neurons. The
+cells in an HTM region are roughly equivalent to the neurons in Layer
+3 in a region of the neocortex.
+
+A fuller description of a HTM region, introduced for the first time in
+this revision, includes a model of how Layers 1, 2/3, 4, 5 and 6 combine 
+to perform sensorimotor sequence memory, feedback, behavior and hierarchy.
+We begin with a detailed description of a single-layer region, and later
+extend these concepts to the full model including all the layers.
+
+\begin{figure}
+\resizebox{\textwidth}{!}{\includegraphics{figures/Figure-1_3.pdf}}
+\caption{A section of an HTM region. HTM regions are comprised of many
+  cells. The cells are organized in a two dimensional array of
+  columns. This figure shows a small section of a single-layer HTM region with
+  four cells per column. Each column connects to a subset of the input
+  and each cell connects to other cells in the region (connections not
+  shown). Note that this HTM region, including its columnar structure,
+  is equivalent to one layer of neurons in a neocortical region.}
+\label{figure:one-region}
+\end{figure}
+
+Although an HTM region is equivalent to only a portion of a neocortical region, 
+it can do inference and prediction on complex data streams and therefore can be useful in many problems.
+
+\subsection*{Sparse Distributed Representations}
+
+Although neurons in the neocortex are highly interconnected,
+inhibitory neurons guarantee that only a small percentage of the
+neurons are active at one time. Thus, information in the brain is
+always represented by a small percentage of active neurons within a
+large population of neurons. This kind of encoding is called a
+``sparse distributed representation.'' ``Sparse'' means that only a
+small percentage of neurons are active at one time. ``Distributed''
+means that the activations of many neurons are required in order to
+represent something. A single active neuron conveys some meaning but
+it must be interpreted within the context of a population of neurons
+to convey the full meaning.
+
+HTM regions also use sparse distributed representations. In fact, the
+memory mechanisms within an HTM region are dependent on using sparse
+distributed representations, and wouldn't work otherwise. The input to
+an HTM region is always a distributed representation, but it may not
+be sparse, so the first thing an HTM region does is to convert its
+input into a sparse distributed representation.
+
+For example, a region might receive 20,000 input bits. The percentage
+of input bits that are ``1'' and ``0'' might vary significantly over
+time. One time there might be 5,000 ``1'' bits and another time there
+might be 9,000 ``1'' bits. The HTM region could convert this input
+into an internal representation of 10,000 bits of which 2\%, or 200,
+are active at once, regardless of how many of the input bits are
+``1.'' As the input to the HTM region varies over time, the internal
+representation also will change, but there always will be about 200
+bits out of 10,000 active.
+
+It may seem that this process generates a large loss of information as
+the number of possible input patterns is much greater than the number
+of possible representations in the region. However, both numbers are
+incredibly big. The actual inputs seen by a region will be a miniscule
+fraction of all possible inputs. Later we will describe how a region
+creates a sparse representation from its input. The theoretical loss
+of information will not have a practical effect.
+
+\begin{figure}
+\resizebox{\textwidth}{!}{\includegraphics{figures/Figure-1_4.pdf}}
+\caption{An HTM region showing sparse distributed cell activation}
+\label{figure:sparse-activation}
+\end{figure}
+
+Sparse distributed representations have several desirable properties
+and are integral to the operation of HTMs. They will be touched on
+again later.
+
+\subsection*{The role of time}
+
+Time plays a crucial role in learning, inference, and prediction.
+
+Let's start with inference. Without using time, we can infer almost
+nothing from our tactile and auditory senses. For example if you are
+blindfolded and someone places an apple in your hand, you can identify
+what it is after manipulating it for just a second or so. As you move
+your fingers over the apple, although the tactile information is
+constantly changing, the object itself --- the apple, as well as your
+high-level percept for ``apple'' --- stays constant. However, if an
+apple was placed on your outstretched palm, and you weren't allowed to
+move your hand or fingers, you would have great difficulty identifying
+it as an apple rather than a lemon.
+
+The same is true for hearing. A static sound conveys little meaning. A
+word like ``apple,'' or the crunching sounds of someone biting into an
+apple, can only be recognized from the dozens or hundreds of rapid,
+sequential changes over time of the sound spectrum.
+
+Vision, in contrast, is a mixed case. Unlike with touch and hearing,
+humans are able to recognize images when they are flashed in front of
+them too fast to give the eyes a chance to move. Thus, visual
+inference does not always require time-changing inputs. However,
+during normal vision we constantly move our eyes, heads and bodies,
+and objects in the world move around us too. Our ability to infer
+based on quick visual exposure is a special case made possible by the
+statistical properties of vision and years of training. The general
+case for vision, hearing, and touch is that inference requires
+time-changing inputs.
+
+Having covered the general case of inference, and the special case of
+vision inference of static images, let's look at learning. In order to
+learn, all HTM systems must be exposed to time-changing inputs during
+training. Even in vision, where static inference is sometimes
+possible, we must see changing images of objects to learn what an
+object looks like. For example, imagine a dog is running toward
+you. At each instance in time the dog causes a pattern of activity on
+the retina in your eye. You perceive these patterns as different views
+of the same dog, but mathematically the patterns are entirely
+dissimilar. The brain learns that these different patterns mean the
+same thing by observing them in sequence. Time is the ``supervisor,''
+teaching you which spatial patterns go together.
+
+Note that it isn't sufficient for sensory input merely to change. A
+succession of unrelated sensory patterns would only lead to
+confusion. The time-changing inputs must come from a common source in
+the world. Note also that although we use human senses as examples,
+the general case applies to non-human senses as well. If we want to
+train an HTM to recognize patterns from a power plant's temperature,
+vibration and noise sensors, the HTM will need to be trained on data
+from those sensors changing through time.
+
+Typically, an HTM network needs to be trained with lots of data. You
+learned to identify dogs by seeing many instances of many breeds of
+dogs, not just one single view of one single dog. The job of the HTM
+algorithms is to learn the temporal sequences from a stream of input
+data, i.e., to build a model of which patterns follow which other
+patterns. This job is difficult because it may not know when sequences
+start and end, there may be overlapping sequences occurring at the
+same time, learning has to occur continuously, and learning has to
+occur in the presence of noise.
+
+Learning and recognizing sequences is the basis of forming
+predictions. Once an HTM learns what patterns are likely to follow
+other patterns, it can predict the likely next pattern(s) given the
+current input and immediately past inputs. Prediction is covered in
+more detail later.
+
+We now will turn to the four basic functions of HTM: learning,
+inference, prediction, and behavior. Every HTM region performs the
+first three functions: learning, inference, and prediction. Behavior,
+however, is different. We know from biology that most neocortical
+regions have a role in creating behavior but we do not believe it is
+essential for many interesting applications. Therefore we have not
+included behavior in our current implementation of HTM. We mention it
+here for completeness.
+
+\subsection*{Learning}
+
+An HTM region learns about its world by finding patterns and then
+sequences of patterns in sensory data. The region does not ``know''
+what its inputs represent; it works in a purely statistical realm. It
+looks for combinations of input bits that occur together often, which
+we call spatial patterns. It then looks for how these spatial patterns
+appear in sequence over time, which we call temporal patterns or
+sequences.
+
+If the input to the region represents environmental sensors on a
+building, the region might discover that certain combinations of
+temperature and humidity on the north side of the building occur often
+and that different combinations occur on the south side of the
+building. Then it might learn that sequences of these combinations
+occur as each day passes.
+
+If the input to a region represented information related to purchases
+within a store, the HTM region might discover that certain types of
+articles are purchased on weekends, or that when the weather is cold
+certain price ranges are favored in the evening. Then it might learn
+that different individuals follow similar sequential patterns in their
+purchases.
+
+A single HTM region has limited learning capability. A region
+automatically adjusts what it learns based on how much memory it has
+and the complexity of the input it receives. The spatial patterns
+learned by a region will necessarily become simpler if the memory
+allocated to a region is reduced. Or the spatial patterns learned can
+become more complex if the allocated memory is increased. If the
+learned spatial patterns in a region are simple, then a hierarchy of
+regions may be needed to understand complex images. We see this
+characteristic in the human vision system where the neocortical region
+receiving input from the retina learns spatial patterns for small
+parts of the visual space. Only after several levels of hierarchy do
+spatial patterns combine and represent most or all of the visual
+space.
+
+Like a biological system, the learning algorithms in an HTM region are
+capable of ``on-line learning,'' i.e., they continually learn from each
+new input. There isn't a need for a learning phase separate from an
+inference phase, though inference improves after additional
+learning. As the patterns in the input change, the HTM region will
+gradually change, too.
+
+After initial training, an HTM can continue to learn or,
+alternatively, learning can be disabled after the training
+phase. Another option is to turn off learning only at the lowest
+levels of the hierarchy but continue to learn at the higher
+levels. Once an HTM has learned the basic statistical structure of its
+world, most new learning occurs in the upper levels of the
+hierarchy. If an HTM is exposed to new patterns that have previously
+unseen low-level structure, it will take longer for the HTM to learn
+these new patterns. We see this trait in humans. Learning new words in
+a language you already know is relatively easy. However, if you try to
+learn new words from a foreign language with unfamiliar sounds, you'll
+find it much harder because you don't already know the low level
+sounds.
+
+Simply discovering patterns is a potentially valuable
+capability. Understanding the high-level patterns in market
+fluctuations, disease, weather, manufacturing yield, or failures of
+complex systems, such as power grids, is valuable in itself. Even so,
+learning spatial and temporal patterns is mostly a precursor to
+inference and prediction.
+
+\subsection*{Inference}
+
+After an HTM has learned the patterns in its world, it can perform
+inference on novel inputs. When an HTM receives input, it will match
+it to previously learned spatial and temporal patterns. Successfully
+matching new inputs to previously stored sequences is the essence of
+inference and pattern matching.
+
+Think about how you recognize a melody. Hearing the first note in a
+melody tells you little. The second note narrows down the
+possibilities significantly but it may still not be enough. Usually it
+takes three, four, or more notes before you recognize the
+melody. Inference in an HTM region is similar. It is constantly
+looking at a stream of inputs and matching them to previously learned
+sequences. An HTM region can find matches from the beginning of
+sequences but usually it is more fluid, analogous to how you can
+recognize a melody starting from anywhere. Because HTM regions use
+distributed representations, the region's use of sequence memory and
+inference are more complicated than the melody example implies, but
+the example gives a flavor for how it works.
+
+It may not be immediately obvious, but every sensory experience you
+have ever had has been novel, yet you easily find familiar patterns in
+this novel input. For example, you can understand the word
+``breakfast'' spoken by almost anyone, no matter whether they are old
+or young, male or female, are speaking quickly or slowly, or have a
+strong accent. Even if you had the same person say the same word
+``breakfast'' a hundred times, the sound would never stimulate your
+cochleae (auditory receptors) in exactly the same way twice.
+
+An HTM region faces the same problem your brain does: inputs may never
+repeat exactly. Consequently, just like your brain, an HTM region must
+handle novel input during inference and training. One way an HTM
+region copes with novel input is through the use of sparse distributed
+representations. A key property of sparse distributed representations
+is that you only need to match a portion of the pattern to be
+confident that the match is significant.
+
+\subsection*{Prediction}
+
+Every region of an HTM stores sequences of patterns. By matching
+stored sequences with current input, a region forms a prediction about
+what inputs will likely arrive next. HTM regions actually store
+transitions between sparse distributed representations. In some
+instances the transitions can look like a linear sequence, such as the
+notes in a melody, but in the general case many possible future inputs
+may be predicted at the same time. An HTM region will make different
+predictions based on context that might stretch back far in time. The
+majority of memory in an HTM is dedicated to sequence memory, or
+storing transitions between spatial patterns.
+
+Following are some key properties of HTM prediction.
+
+\begin{enumerate}
+\item {\bf Prediction is continuous.}
+
+Without being conscious of it, you are constantly predicting. HTMs do
+the same. When listening to a song, you are predicting the next
+note. When walking down the stairs, you are predicting when your foot
+will touch the next step. When watching a baseball pitcher throw, you
+are predicting that the ball will come near the batter. In an HTM
+region, prediction and inference are almost the same thing. Prediction
+is not a separate step but integral to the way an HTM region works.
+
+\item {\bf Prediction occurs in every region at every level of the hierarchy.}
+
+If you have a hierarchy of HTM regions, prediction will occur at each
+level. Regions will make predictions about the patterns they have
+learned. In a language example, lower level regions might predict
+possible next phonemes, and higher level regions might predict words
+or phrases.
+
+\item {\bf Predictions are context sensitive.}
+
+Predictions are based on what has occurred in the past, as well as
+what is occurring now. Thus an input will produce different
+predictions based on previous context. An HTM region learns to use as
+much prior context as needed, and can keep the context over both short
+and long stretches of time. This ability is known as ``variable
+order'' memory. For example, think about a memorized speech such as
+the Gettysburg Address. To predict the next word, knowing just the
+current word is rarely sufficient; the word ``and'' is followed by
+``seven'' and later by ``dedicated'' just in the first
+sentence. Sometimes, just a little bit of context will help
+prediction; knowing ``four score and'' would help predict ``seven.''
+Other times, there are repetitive phrases, and one would need to use
+the context of a far longer timeframe to know where you are in the
+speech, and therefore what comes next.
+
+\item {\bf A prediction tells us if a new input is expected or unexpected.}
+
+Each HTM region is a novelty detector. Because each region predicts
+what will occur next, it ``knows'' when something unexpected
+happens. HTMs can predict many possible next inputs simultaneously,
+not just one. So it may not be able to predict exactly what will
+happen next, but if the next input doesn't match any of the
+predictions the HTM region will know that an anomaly has occurred.
+
+In a sensorimotor HTM, a region also uses information about motor commands
+to assist with prediction. As long as new inputs are correctly predicted, the 
+region will be able to form a stable representation of the input. If prediction 
+fails, the region will signal this change in the input.
+
+\item {\bf Prediction helps make the system more robust to noise.}
+
+When an HTM predicts what is likely to happen next, the prediction can
+bias the system toward inferring what it predicted. For example, if an
+HTM were processing spoken language, it would predict what sounds,
+words, and ideas are likely to be uttered next. This prediction helps
+the system fill in missing data. If an ambiguous sound arrives, the
+HTM will interpret the sound based on what it is expecting, thus
+helping inference even in the presence of noise.
+
+\item {\bf Prediction leads to stability.}
+
+One of the properties of HTMs is that the outputs of regions become more stable --- that is
+slower changing, longer-lasting --- the higher they are in the
+hierarchy. This property results from how a region predicts.
+In the new sensorimotor theory, higher-level regions communicate a SDR
+of a slowly-changing sequence to lower layers, helping them predict the inputs
+they will receive in this context. As stated previously, each region also uses 
+motor information to help predict transitions in the patterns recognised by the region.
+This characteristic mirrors our experience of the
+real world, where high level concepts --- such as the name of a song
+--- change more slowly than low level concepts --- the actual notes of
+the song.
+
+In an HTM region, sequence memory, inference, and prediction are
+intimately integrated. They are the core functions of a region.
+
+\end{enumerate}
+
+\subsection*{Behavior}
+
+Our behavior influences what we perceive. As we move our eyes, our
+retina receives changing sensory input. Moving our limbs and fingers
+causes varying touch sensation to reach the brain. Almost all our
+actions change what we sense. Sensory input and motor behavior are
+intimately entwined.
+
+For decades the prevailing view was that a single region in the
+neocortex, the primary motor region, was where motor commands
+originated in the neocortex. Over time it was discovered that most or
+all regions in the neocortex have a motor output, even low level
+sensory regions. It appears that all cortical regions integrate
+sensory and motor functions.
+
+We expect that a motor output could be added to each HTM region within
+the currently existing framework since generating motor commands is
+similar to making predictions. However, all the implementations of
+HTMs to date have been purely sensory, without a motor component.
+
+In this revision, we introduce a new framework which explains how 
+behavior and sensory/feedforward inputs are integrated and produced in a
+fuller HTM model.
+
+\subsection*{Progress toward the implementation of HTM}
+
+We have made substantial progress turning the HTM theoretical
+framework into a practical technology. We have implemented and tested
+several versions of the HTM cortical learning algorithms and have
+found the basic architecture to be sound. As we test the algorithms on
+new data sets, we will refine the algorithms and add missing
+pieces. We will update this document as we do. The next three chapters
+describe the current state of the algorithms.
+
+There are many components of the theory that are not yet implemented,
+including attention, feedback between regions, specific timing, and
+behavior/sensory-motor integration. These missing components should
+fit into the framework already created.

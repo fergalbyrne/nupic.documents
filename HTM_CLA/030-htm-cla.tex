@@ -1,0 +1,799 @@
+\chapter{HTM Cortical Learning Algorithms}
+\label{chapter:learning}
+
+This chapter describes the learning algorithms at work inside an HTM
+region. Chapters~\ref{chapter:pattern-memory} and
+\ref{chapter:transition-memory} describe the implementation of the
+learning algorithms using pseudocode, whereas this chapter is more
+conceptual.
+
+\section*{Terminology}
+
+Before we get started, a note about terminology might be helpful. We
+use the language of neuroscience in describing the HTM learning
+algorithms. Terms such as cells, synapses, potential synapses,
+dendrite segments, and columns are used throughout. This terminology
+is logical since the learning algorithms were largely derived by
+matching neuroscience details with theoretical needs. However, in the
+process of implementing the algorithms we were confronted with
+performance issues and therefore once we felt we understood how
+something worked we would look for ways to speed processing. This
+often involved deviating from a strict adherence to biological details
+as long as we could get the same results. If you are new to
+neuroscience this won't be a problem. However, if you are familiar
+with neuroscience terms, you might find yourself confused as our use
+of terms varies from your expectation. The appendixes on biology
+discuss the differences and similarities between the HTM learning
+algorithms and their neurobiological equivalents in detail. Here we
+will mention a few of the deviations that are likely to cause the most
+confusion.
+
+\subsection*{Region}
+
+For the moment, we will model each region as a single layer, which receives 
+a stream of feedforward inputs, recognises spatial patterns, learns sequences
+of these patterns, and makes predictions. In the neocortex, this models the key functions performed 
+in Layer 3. We call this initial model the ``Sensory CLA.''
+
+In a later chapter, we will use this basic understanding of recognition, sequence learning, and prediction
+to build a more complete sensorimotor temporal memory system. This new theory is called the ``Sensorimotor
+CLA.''
+
+\subsection*{Cell states}
+
+HTM cells have two output states, active (firing) and inactive. We have not
+found a need for modeling individual action potentials or even scalar
+rates of activity beyond the two active states. The use of distributed
+representations seems to overcome the need to model scalar activity
+rates in cells.
+
+Apart from overt activity, each cell possesses a level of ``potential 
+activation'' which corresponds to the amount of depolarisation taking place
+during a timestep. This depolarisation arises from feed-forward input,
+as well as from lateral input (which represents a prediction), and
+these are considered separately. The former is primarily used to perform
+feedforward recognition (and thus the region's SDR) while the latter is used
+to identify cells as ``predictive''.
+
+\subsection*{Dendrite segments}
+
+HTM cells have a relatively realistic (and therefore complex) dendrite
+model. In theory each HTM cell has one proximal dendrite segment and a
+dozen or two distal dendrite segments. The proximal dendrite segment
+receives feed-forward input and the distal dendrite segments receive
+lateral input from nearby cells. A class of inhibitory cells forces
+all the cells in a column to respond to similar feed-forward input. 
+
+To simplify, we removed the proximal dendrite segment from each cell and
+replaced it with a single shared dendrite segment per column of
+cells. The recognition function (described below) operates on the
+shared dendrite segment, at the level of columns. The prediction
+function operates on distal dendrite segments, at the level of
+individual cells within columns. This simplification achieves the same
+functionality, though in biology there is no equivalent to a dendrite
+segment attached to a column.
+
+Some implementations of HTM have re-introduced the per-cell proximal 
+dendrites.
+
+\subsection*{Synapses}
+
+HTM synapses have binary weights. Biological synapses have varying
+weights but they are also partially stochastic, suggesting a
+biological neuron cannot rely on precise synaptic weights. The use of
+distributed representations in HTMs plus our model of dendrite
+operation allows us to assign binary weights to HTM synapses with no
+ill effect. To model the forming and un-forming of synapses we use two
+additional concepts from neuroscience that you may not be familiar
+with. One is the concept of ``potential synapses.'' This represents
+all the axons that pass close enough to a dendrite segment that they
+could potentially form a synapse. The second is called ``permanence.''
+This is a scalar value assigned to each potential synapse. The
+permanence of a synapse represents a range of connectedness between an
+axon and a dendrite. Biologically, this corresponds to the extent of growth
+of dendritic spines, the size and contents of the axonal terminal, and 
+the number and characteristics of receptor gates in each synapse.
+We simplify this drastically by modelling the range from completely
+unconnected, to starting to form a synapse but not connected yet, to a
+minimally connected synapse, to a large fully connected synapse. The
+permanence of a synapse is a scalar value ranging from $0.0$ to
+$1.0$. Learning involves incrementing and decrementing a synapse's
+permanence. When a synapse's permanence is above a threshold, it is
+connected with a weight of ``1''. When it is below the threshold, it
+is unconnected with a weight of ``0.''
+
+\section*{Overview}
+
+Imagine that you are a region of an HTM. Your input consists of
+thousands or tens of thousands of bits. These input bits may represent
+sensory data or they may come from another region lower in the
+hierarchy. They are turning on and off in complex ways. What are you
+supposed to do with this input?
+
+We already have discussed the answer in its simplest form. Each HTM
+region looks for common patterns in its input and then learns
+sequences of those patterns. From its memory of sequences, each region
+makes predictions. That high level description makes it sound easy,
+but in reality there is a lot going on. Let's break it down a little
+further into the following three steps:
+
+\begin{enumerate}
+\item Form a sparse distributed representation of the input
+\item Form a representation of the input in the context of previous
+  inputs
+\item Form a prediction based on the current input in the context of
+  previous inputs
+\end{enumerate}
+
+We will discuss each of these steps in more detail.
+
+\begin{enumerate}
+\item {\bf Form a sparse distributed representation of the input}
+
+When you imagine an input to a region, think of it as a large number
+of bits. In a brain these would be axons from neurons. At any point in
+time some of these input bits will be active (value 1) and others will
+be inactive (value 0). The percentage of input bits that are active
+vary, say from 0\% to 60\%. The first thing an HTM region does is to
+convert this input into a new representation that is sparse. For
+example, the input might have 40\% of its bits ``on'' but the new
+representation has just 2\% of its bits ``on.''
+
+An HTM region is logically comprised of a set of columns. Each column
+is comprised of one or more cells. Columns may be logically arranged
+in a 2D array but this is not a requirement. Each column in a region
+is connected to a unique subset of the input bits (usually overlapping
+with other columns but never exactly the same subset of input
+bits). As a result, different input patterns result in different
+levels of activation potential in the columns. The columns with the strongest
+activation inhibit, or deactivate, the columns with weaker
+activation. (The inhibition occurs within a radius that can span from
+very local to the entire region.) The sparse representation of the
+input is encoded by which columns are active and which are inactive
+after inhibition. The inhibition function is defined to achieve a
+relatively constant percentage of columns to be active, even when the
+number of input bits that are active varies significantly.
+
+\begin{figure}
+\resizebox{\textwidth}{!}{\includegraphics{figures/Figure-2_1.pdf}}
+\caption{An HTM region consists of columns of cells. Only a small
+  portion of a region is shown. Each column of cells receives
+  activation from a unique subset of the input. Columns with the
+  strongest activation inhibit columns with weaker activation. The
+  result is a sparse distributed representation of the input. The
+  figure shows active columns in light grey. (When there is no prior
+  state, every cell in the active columns will be active, as shown.)}
+\label{figure:region-columns}
+\end{figure}
+
+Imagine now that the input pattern changes. If only a few input bits
+change, some columns will receive a few more or a few less inputs in
+the ``on'' state, but the set of active columns will not likely change
+much. Thus similar input patterns (ones that have a significant number
+of active bits in common) will map to a relatively stable set of
+active columns. How stable the encoding is depends greatly on what
+inputs each column is connected to. These connections are learned via
+a method described later.
+
+All these steps (learning the connections to each column from a subset
+of the inputs, determining the level of input to each column, and
+using inhibition to select a sparse set of active columns) is referred
+to as ``Recognition.''
+
+Another term we've used is ``Spatial Pooling'', because patterns that are
+``spatially'' similar (meaning they share a large number of active
+bits) are ``pooled'' (meaning they are grouped together in a common
+representation).
+
+\item {\bf Form a representation of the input in the context of
+  previous inputs}
+
+The next function performed by a region is to convert the columnar
+representation of the input into a new representation that includes
+state, or context, from the past. The new representation is formed by
+activating a subset of the cells within each column, typically only
+one cell per column (Figure~\ref{figure:column-partial-activation}).
+
+Consider hearing two spoken sentences, ``I ate a pear'' and ``I have
+eight pears.'' The words ``ate'' and ``eight'' are homonyms; they
+sound identical. We can be certain that at some point in the brain
+there are neurons that respond identically to the spoken words ``ate''
+and ``eight.'' After all, identical sounds are entering the
+ear. However, we also can be certain that at another point in the
+brain the neurons that respond to this input are different, in
+different contexts. The representations for the sound ``ate'' will be
+different when you hear ``I ate'' vs.\ ``I have eight.'' Imagine that
+you have memorized the two sentences ``I ate a pear'' and ``I have
+eight pears.'' Hearing ``I ate\dots'' leads to a different prediction
+than ``I have eight\dots.'' There must be different internal
+representations upon hearing ``I ate'' and ``I have eight.'' This
+principle of encoding an input differently in different contexts is a
+universal feature of perception and action and is one of the most
+important functions of an HTM region. It is hard to overemphasize the
+importance of this capability.
+
+Each column in an HTM region consists of multiple cells. All cells in
+a column get the same feed-forward input. Each cell in a column can be
+active or not active. By selecting different active cells in each
+active column, we can represent the exact same input differently in
+different contexts. A specific example might help. Say every column
+has 10 cells and the representation of every input consists of 100
+active columns. If only one cell per column is active at a time, we
+have $10^{100}$ ways of representing the exact same input. The same
+input will always result in the same 100 columns being active, but in
+different contexts different cells in those columns will be
+active. Now we can represent the same input in a very large number of
+contexts, but how unique will those different representations be?
+Nearly all randomly chosen pairs of the $10^{100}$ possible patterns
+will overlap by about 10 cells. Thus two representations of a
+particular input in different contexts will have about 10 cells in
+common and 90 cells that are different, making them easily
+distinguishable.
+
+The general rule used by an HTM region is the following. When a column
+becomes active, it looks at all the cells in the column. If one or
+more cells in the column are already in the predictive state, only
+those cells become active. If no cells in the column are in the
+predictive state, then all the cells become active. You can think of
+it this way, if an input pattern is expected then the system confirms
+that expectation by activating only the cells in the predictive
+state. If the input pattern is unexpected then the system activates
+all cells in the column as if to say ``the input occurred unexpectedly
+so all possible interpretations are valid.''
+
+If there is no prior state, and therefore no context and prediction,
+all the cells in a column will become active when the column becomes
+active. This scenario is similar to hearing the first note in a
+song. Without context you usually can't predict what will happen next;
+all options are available. If there is prior state but the input does
+not match what is expected, all the cells in the active column will
+become active. This determination is done on a column by column basis
+so a predictive match or mismatch is never an ``all-or-nothing''
+event.
+
+\begin{figure}
+\resizebox{\textwidth}{!}{\includegraphics{figures/Figure-2_2.pdf}}
+\caption{By activating a subset of cells in each column, an HTM region
+  can represent the same input in many different contexts. Columns
+  only activate predicted cells. Columns with no predicted cells
+  activate all the cells in the column. The figure shows some columns
+  with one cell active and some columns with all cells active.}
+\label{figure:column-partial-activation}
+\end{figure}
+
+As mentioned in the terminology section above, HTM cells can be in one
+of three states. If a cell is active due to feed-forward input we just
+use the term ``active.'' If the cell has high potential due to lateral
+connections to other nearby cells we say it is in the ``predictive
+state'' (Figure~\ref{figure:activity-types}).
+
+\item {\bf Form a prediction based on the input in the context of
+  previous inputs}
+
+The final step for our region is to make a prediction of what is
+likely to happen next. The prediction is based on the representation
+formed in step 2), which includes context from all previous inputs.
+
+When a region makes a prediction it depolarises (into the predictive
+state) all the cells that will likely become active due to future
+feed-forward input. Because representations in a region are sparse,
+multiple predictions can be made at the same time. For example if 2\%
+of the columns are active due to an input, you could expect that ten
+different predictions could be made resulting in 20\% of the columns
+having a predicted cell. Or, twenty different predictions could be
+made resulting in 40\% of the columns having a predicted cell. If each
+column had four cells, with one active at a time, then 10\% of the
+cells would be in the predictive state.
+
+A future chapter on sparse distributed representations will show that
+even though different predictions are merged together, a region can
+know with high certainty whether a particular input was predicted or
+not.
+
+How does a region make a prediction? When input patterns change over
+time, different sets of columns and cells become active in
+sequence. When a cell becomes active, it forms connections to a subset
+of the cells nearby that were active immediately prior. These
+connections can be formed quickly or slowly depending on the learning
+rate required by the application. Later, all a cell needs to do is to
+look at these connections for coincident activity. If the connections
+become active, the cell can expect that it might become active shortly
+and enters a predictive state. Thus the feed-forward activation of a
+set of cells will lead to the predictive depolarisation of other sets of
+cells that typically follow. Think of this as the moment when you
+recognize a song and start predicting the next notes.
+
+\begin{figure}
+\resizebox{\textwidth}{!}{\includegraphics{figures/Figure-2_3.pdf}}
+\caption{At any point in time, some cells in an HTM region will be
+  active due to feed-forward input (shown in light gray). Other cells
+  that receive lateral input from active cells will be in a predictive
+  state (shown in dark gray).}
+\label{figure:activity-types}
+\end{figure}
+
+In summary, when a new input arrives, it leads to a sparse set of
+active columns. One or more of the cells in each column become active,
+these in turn cause other cells to enter a predictive state through
+learned connections between cells in the region. The cells depolarised
+by connections within the region constitute a prediction of what is
+likely to happen next. When the next feed-forward input arrives, it
+selects another sparse set of active columns. If a newly active column
+is unexpected, meaning it was not predicted by any cells, it will
+activate all the cells in the columns. If a newly active column has
+one or more predicted cells, only those cells will become active. The
+output of a region is the pattern of activity of all cells in the region,
+including the cells active because of feed-forward input, and in particular those cells
+which were predictive of the current input in context.
+
+%As mentioned earlier, predictions are not just for the next time
+%step. Predictions in an HTM region can be for several time steps into
+% the future. Using melodies as example, an HTM region would not just
+% predict the next note in a melody, but might predict the next four
+% notes. This leads to a desirable property. The output of a region (the
+% union of all the active and predicted cells in a region) changes more
+% slowly than the input. Imagine the region is predicting the next four
+% notes in a melody. We will represent the melody by the letter sequence
+% A,B,C,D,E,F,G. After hearing the first two notes, the region
+% recognizes the sequence and starts predicting. It predicts
+% C,D,E,F. The ``B'' cells are already active so cells for B,C,D,E,F are
+% all in one of the two active states. Now the region hears the next
+% note ``C.'' The set of active and predictive cells now represents
+% ``C,D,E,F,G.'' Note that the input pattern changed completely going
+% from ``B'' to ``C,'' but only 20\% of the cells changed.
+
+
+
+\end{enumerate}
+
+% Because the output of an HTM region is a vector representing the
+% activity of all the region's cells, the output in this example is five
+% times more stable than the input. In a hierarchical arrangement of
+% regions, we will see an increase in temporal stability as you ascend
+% the hierarchy.
+
+We use the term ``Prediction'' to describe the two steps of
+adding context to the representation and making cells predictive. 
+% By creating
+% slowly changing outputs for sequences of patterns, we are in essence
+% ``pooling'' together different patterns that follow each other in
+% time.
+
+Now we will go into another level of detail. We start with concepts
+that are shared by Recognition and Prediction. Then we
+discuss concepts and details unique to the spatial pooler followed by
+concepts and details unique to the temporal pooler.
+
+\section*{Shared concepts}
+
+Learning in the spatial pooler and temporal pooler are
+similar. Learning in both cases involves establishing connections, or
+synapses, between cells. The temporal pooler learns connections
+between cells in the same region. The spatial pooler learns
+feed-forward connections between input bits and columns.
+
+\subsection*{Binary weights}
+HTM synapses have only a 0 or 1 effect; their ``weight'' is binary, a
+property unlike many neural network models which use scalar variable
+values in the range of 0 to 1.
+
+\subsection*{Permanence}
+Synapses are forming and unforming constantly during learning. As
+mentioned before, we assign a scalar value to each synapse ($0.0$ to
+$1.0$) to indicate how permanent the connection is. When a connection is
+reinforced, its permanence is increased. Under other conditions, the
+permanence is decreased. When the permanence is above a threshold
+(e.g., $0.2$), the synapse is considered to be established. If the
+permanence is below the threshold, the synapse will have no effect.
+
+\subsection*{Dendrite segments}
+Synapses connect to dendrite segments. There are two types of dendrite
+segments, proximal and distal.
+\begin{itemize}
+\item A proximal dendrite segment forms synapses with feed-forward
+  inputs. The active synapses on this type of segment are linearly
+  summed to determine the feed- forward activation of a column.
+
+\item A distal dendrite segment forms synapses with cells within the
+  region. Every cell has several distal dendrite segments. If the sum
+  of the active synapses on a distal segment exceeds a threshold, then
+  the associated cell becomes active in a predicted state. Since there
+  are multiple distal dendrite segments per cell, a cell's predictive
+  state is the logical OR operation of several constituent threshold
+  detectors.
+\end{itemize}
+
+\subsection*{Potential Synapses}
+As mentioned earlier, each dendrite segment has a list of potential synapses. All the potential synapses are given a permanence value and may become functional synapses if their permanence values exceed a threshold.
+
+\subsection*{Learning}
+Learning involves incrementing or decrementing the permanence values
+of potential synapses on a dendrite segment. The rules used for making
+synapses more or less permanent are similar to ``Hebbian'' learning
+rules. For example, if a post-synaptic cell is active due to a
+dendrite segment receiving input above its threshold, then the
+permanence values of the synapses on that segment are
+modified. Synapses that are active, and therefore contributed to the
+cell being active, have their permanence increased. Synapses that are
+inactive, and therefore did not contribute, have their permanence
+decreased. The exact conditions under which synapse permanence values
+are updated differ in the spatial and temporal pooler. The details are
+described below.
+
+Now we will discuss concepts specific to the spatial and temporal
+pooler functions.
+
+\section*{Spatial pooler concepts}
+
+The most fundamental function of the spatial pooler is to convert a
+region's input into a sparse pattern. This function is important
+because the mechanism used to learn sequences and make predictions
+requires starting with sparse distributed patterns.
+
+There are several overlapping goals for the spatial pooler, which
+determine how the spatial pooler operates and learns.
+
+\begin{enumerate}
+\item {\bf Use all columns}
+
+An HTM region has a fixed number of columns that learn to represent
+common patterns in the input. One objective is to make sure all the
+columns learn to represent something useful regardless of how many
+columns you have. We don't want columns that are never active. To
+prevent this from happening, we keep track of how often a column is
+active relative to its neighbors. If the relative activity of a column
+is too low, it boosts its input activity level until it starts to be
+part of the winning set of columns. In essence, all columns are
+competing with their neighbors to be a participant in representing
+input patterns. If a column is not very active, it will become more
+aggressive. When it does, other columns will be forced to modify their
+input and start representing slightly different input patterns.
+
+\item {\bf Maintain desired density}
+
+A region needs to form a sparse representation of its inputs. Columns
+with the most input inhibit their neighbors. There is a radius of
+inhibition which is proportional to the size of the receptive fields
+of the columns (and therefore can range from small to the size of the
+entire region). Within the radius of inhibition, we allow only a
+percentage of the columns with the most active input to be
+``winners.'' The remainders of the columns are disabled. (A ``radius''
+of inhibition implies a 2D arrangement of columns, but the concept can
+be adapted to other topologies.)
+
+\item {\bf Avoid trivial patterns}
+
+We want all our columns to represent non-trivial patterns in the
+input. This goal can be achieved by setting a minimum threshold of
+input for the column to be active. For example, if we set the
+threshold to 50, it means that a column must have a least 50 active
+synapses on its dendrite segment to be active, guaranteeing a certain
+level of complexity to the pattern it represents.
+
+\item {\bf Avoid extra connections}
+
+If we aren't careful, a column could form a large number of valid
+synapses. It would then respond strongly to many different unrelated
+input patterns. Different subsets of the synapses would respond to
+different patterns. To avoid this problem, we decrement the permanence
+value of any synapse that isn't currently contributing to a winning
+column. By making sure non-contributing synapses are sufficiently ￼￼
+penalized, we guarantee a column represents a limited number input
+patterns, sometimes only one.
+
+\item {\bf Self adjusting receptive fields}
+
+Real brains are highly ``plastic''; regions of the neocortex can learn
+to represent entirely different things in reaction to various
+changes. If part of the neocortex is damaged, other parts will adjust
+to represent what the damaged part used to represent. If a sensory
+organ is damaged or changed, the associated part of the neocortex will
+adjust to represent something else. The system is self-adjusting.
+
+We want our HTM regions to exhibit the same flexibility. If we
+allocate 10,000 columns to a region, it should learn how to best
+represent the input with 10,000 columns. If we allocate 20,000
+columns, it should learn how best to use that number. If the input
+statistics change, the columns should change to best represent the new
+reality. In short, the designer of an HTM should be able to allocate
+any resources to a region and the region will do the best job it can
+of representing the input based on the available columns and input
+statistics. The general rule is that with more columns in a region,
+each column will represent larger and more detailed patterns in the
+input. Typically the columns also will be active less often, yet we
+will maintain a relative constant sparsity level.
+
+No new learning rules are required to achieve this highly desirable
+goal. By boosting inactive columns, inhibiting neighboring columns to
+maintain constant sparsity, establishing minimal thresholds for input,
+maintaining a large pool of potential synapses, and adding and
+forgetting synapses based on their contribution, the ensemble of
+columns will dynamically configure to achieve the desired effect.
+\end{enumerate}
+
+\section*{Spatial pooler details}
+
+We can now go through everything the spatial pooling function does.
+
+\begin{enumerate}
+\item Start with an input consisting of a fixed number of bits. These
+  bits might represent sensory data or they might come from another
+  region lower in the hierarchy.
+
+\item Assign a fixed number of columns to the region receiving this
+  input. Each column has an associated dendrite segment. Each dendrite
+  segment has a set of potential synapses representing a subset of the
+  input bits. Each potential synapse has a permanence value. Based on
+  their permanence values, some of the potential synapses will be
+  valid.
+
+\item For any given input, determine how many valid synapses on each
+  column are connected to active input bits.
+
+\item The number of active synapses is multiplied by a ``boosting''
+  factor which is dynamically determined by how often a column is
+  active relative to its neighbors.
+
+\item The columns with the highest activations after boosting disable
+  all but a fixed percentage of the columns within an inhibition
+  radius. The inhibition radius is itself dynamically determined by
+  the spread (or ``fan-out'') of input bits. There is now a sparse set
+  of active columns.
+
+\item For each of the active columns, we adjust the permanence values
+  of all the potential synapses. The permanence values of synapses
+  aligned with active input bits are increased. The permanence values
+  of synapses aligned with inactive input bits are decreased. The
+  changes made to permanence values may change some synapses from
+  being valid to not valid, and vice-versa.
+\end{enumerate}
+
+\section*{Temporal pooler concepts}
+
+Recall that the temporal pooler learns sequences and makes
+predictions. The basic method is that when a cell becomes active, it
+forms connections to other cells that were active just prior. Cells
+can then predict when they will become active by looking at their
+connections. If all the cells do this, collectively they can store and
+recall sequences, and they can predict what is likely to happen
+next. There is no central storage for a sequence of patterns; instead,
+memory is distributed among the individual cells. Because the memory
+is distributed, the system is robust to noise and error. Individual
+cells can fail, usually with little or no discernible effect.
+
+It is worth noting a few important properties of sparse distributed
+representations that the temporal pooler exploits.
+
+Assume we have a hypothetical region that always forms representations
+by using 200 active cells out of a total of 10,000 cells (2\% of the
+cells are active at any time). How can we remember and recognize a
+particular pattern of 200 active cells? A simple way to do this is to
+make a list of the 200 active cells we care about. If we see the same
+200 cells active again we recognize the pattern. However, what if we
+made a list of only 20 of the 200 active cells and ignored the other
+180? What would happen? You might think that remembering only 20 cells
+would cause lots of errors, that those 20 cells would be active in
+many different patterns of 200. But this isn't the case. Because the
+patterns are large and sparse (in this example 200 active cells out of
+10,000), remembering 20 active cells is almost as good as remembering
+all 200. The chance for error in a practical system is exceedingly
+small and we have reduced our memory needs considerably.
+
+The cells in an HTM region take advantage of this property. Each of a
+cell's dendrite segments has a set of connections to other cells in
+the region. A dendrite segment forms these connections as a means of
+recognizing the state of the network at some point in time. There may
+be hundreds or thousands of active cells nearby but the dendrite
+segment only has to connect to 15 or 20 of them. When the dendrite
+segment sees 15 of those active cells, it can be fairly certain the
+larger pattern is occurring. This technique is called ``sub-sampling''
+and is used throughout the HTM algorithms.
+
+Every cell participates in many different distributed patterns and in
+many different sequences. A particular cell might be part of dozens or
+hundreds of temporal transitions. Therefore every cell has several
+dendrite segments, not just one. Ideally a cell would have one
+dendrite segment for each pattern of activity it wants to
+recognize. Practically though, a dendrite segment can learn
+connections for several completely different patterns and still work
+well. For example, one segment might learn 20 connections for each of
+4 different patterns, for a total of 80 connections. We then set a
+threshold so the dendrite segment becomes active when any 15 of its
+connections are active. This introduces the possibility for error. It
+is possible, by chance, that the dendrite reaches its threshold of 15
+active connections by mixing parts of different patterns. However,
+this kind of error is very unlikely, again due to the sparseness of
+the representations.
+
+Now we can see how a cell with one or two dozen dendrite segments and
+a few thousand synapses can recognize hundreds of separate states of
+cell activity.
+
+\section*{Temporal pooler details}
+
+Here we enumerate the steps performed by the temporal pooler. We start
+where the spatial pooler left off, with a set of active columns
+representing the feed-forward input.
+
+\begin{enumerate}
+\item For each active column, check for cells in the column that are
+  in a predictive state, and activate them. If no cells are in a
+  predictive state, activate all the cells in the column. The
+  resulting set of active cells is the representation of the input in
+  the context of prior input.
+
+\item For every dendrite segment on every cell in the region, count
+  how many established synapses are connected to active cells. If the
+  number exceeds a threshold, that dendrite segment is marked as
+  active. Cells with active dendrite segments are put in the
+  predictive state unless they are already active due to feed- forward
+  input. Cells with no active dendrites and not active due to
+  bottom-up input become or remain inactive. The collection of cells
+  now in the predictive state is the prediction of the region.
+
+\item When a dendrite segment becomes active, modify the permanence
+  values of all the synapses associated with the segment. For every
+  potential synapse on the active dendrite segment, increase the
+  permanence of those synapses that are connected to active cells and
+  decrement the permanence of those synapses connected to inactive
+  cells. These changes to synapse permanence are marked as temporary.
+  This modifies the synapses on segments that are already trained
+  sufficiently to make the segment active, and thus lead to a
+  prediction. However, we always want to extend predictions further
+  back in time if possible. Thus, we pick a second dendrite segment on
+  the same cell to train. For the second segment we choose the one
+  that best matches the state of the system in the previous time
+  step. For this segment, using the state of the system in the
+  previous time step, increase the permanence of those synapses that
+  are connected to active cells and decrement the permanence of those
+  synapses connected to inactive cells. These changes to synapse
+  permanence are marked as temporary.
+
+\item Whenever a cell switches from being inactive to active due to
+  feed-forward input, we traverse each potential synapse associated
+  with the cell and remove any temporary marks. Thus we update the
+  permanence of synapses only if they correctly predicted the
+  feed-forward activation of the cell.
+
+\item When a cell switches from either active state to inactive, undo
+  any permanence changes marked as temporary for each potential
+  synapse on this cell. We don't want to strengthen the permanence of
+  synapses that incorrectly predicted the feed-forward activation of a
+  cell.
+\end{enumerate}
+
+Note that only cells that are active due to feed-forward input
+propagate activity {\em within} the region, otherwise predictions
+would lead to further predictions. But all the active cells
+(feed-forward and predictive) form the output of a region and
+propagate to the {\em next} region in the hierarchy.
+
+\section*{First order versus variable order sequences and prediction}
+
+There is one more major topic to discuss before we end our discussion
+on the spatial and temporal poolers. It may not be of interest to all
+readers and it is not needed to understand Chapters 3 and 4.
+% TODO: chapter references
+
+What is the effect of having more or fewer cells per column?
+Specifically, what happens if we have only one cell per column?
+
+In the example used earlier, we showed that a representation of an
+input comprised of 100 active columns with 4 cells per column can be
+encoded in $4^{100}$ different ways. Therefore, the same input can
+appear in a many contexts without confusion. For example, if input
+patterns represent words, then a region can remember many sentences
+that use the same words over and over again and not get confused. A
+word such as ``dog'' would have a unique representation in different
+contexts. This ability permits an HTM region to make what are called
+``variable order'' predictions.
+
+A variable order prediction is not based solely on what is currently
+happening, but on varying amounts of past context. An HTM region is a
+variable order memory.
+
+If we increase to five cells per column, the available number of
+encodings of any particular input in our example would increase to
+$5^{100}$, a huge increase over $4^{100}$. But both these numbers are
+so large that for many practical problems the increase in capacity
+might not be useful.
+
+However, making the number of cells per column much smaller does make
+a big difference.
+
+If we go all the way to one cell per column, we lose the ability to
+include context in our representations. An input to a region always
+results in the same prediction, regardless of previous activity. With
+one cell per column, the memory of an HTM region is a ``first order''
+memory; predictions are based only on the current input.
+
+First order prediction is ideally suited for one type of problem that
+brains solve: static spatial inference. As stated earlier, a human
+exposed to a brief visual image can recognize what the object is even
+if the exposure is too short for the eyes to move. With hearing, you
+always need to hear a sequence of patterns to recognize what it
+is. Vision is usually like that, you usually process a stream of
+visual images. But under certain conditions you can recognize an image
+with a single exposure.
+
+Temporal and static recognition might appear to require different
+inference mechanisms. One requires recognizing sequences of patterns
+and making predictions based on variable length context. The other
+requires recognizing a static spatial pattern without using temporal
+context. An HTM region with multiple cells per column is ideally
+suited for recognizing time-based sequences, and an HTM region with
+one cell per column is ideally suited to recognizing spatial
+patterns. At Numenta, we have performed many experiments using
+one-cell-per-column regions applied to vision problems. The details of
+these experiments are beyond the scope of this chapter; however we
+will cover the important concepts.
+
+If we expose an HTM region to images, the columns in the region learn
+to represent common spatial arrangements of pixels. The kind of
+patterns learned are similar to what is observed in region V1 in
+neocortex (a neocortical region extensively studied in biology),
+typically lines and corners at different orientations. By training on
+moving images, the HTM region learns transitions of these basic
+shapes. For example, a vertical line at one position is often followed
+by a vertical line shifted to the left or right. All the commonly
+observed transitions of patterns are remembered by the HTM region.
+
+Now what happens if we expose a region to an image of a vertical line
+moving to the right? If our region has only one cell per column, it
+will predict the line might next appear to the left or to the
+right. It can't use the context of knowing where the line was in the
+past and therefore know if it is moving left or right. What you find
+is that these one-cell-per-column cells behave like ``complex cells''
+in the neocortex. The predictive output of such a cell will be active
+for a visible line in different positions, regardless of whether the
+line is moving left or right or not at all. We have further observed
+that a region like this exhibits stability to translation, changes in
+scale, etc. while maintaining the ability to distinguish between
+different images. This behavior is what is needed for spatial
+invariance (recognizing the same pattern in different locations of an
+image).
+
+If we now do the same experiment on an HTM region with multiple cells
+per column, we find that the cells behave like ``directionally-tuned
+complex cells'' in the neocortex. The predictive output of a cell will
+be active for a line moving to the left or a line moving to the right,
+but not both.
+
+Putting this all together, we make the following hypothesis. The
+neocortex has to do both first order and variable order inference and
+prediction. There are four or five layers of cells in each region of
+the neocortex. The layers differ in several ways but they all have
+shared columnar response properties and large horizontal connectivity
+within the layer. We speculate that each layer of cells in neocortex
+is performing a variation of the HTM inference and learning rules
+described in this chapter. The different layers of cells play
+different roles. For example it is known from anatomical studies that
+layer 6 creates feedback in the hierarchy and layer 5 is involved in
+motor behavior. The two primary feed-forward layers of cells are
+layers 4 and 3. We speculate that one of the differences between
+layers 4 and 3 is that the cells in layer 4 are acting independently,
+i.e., one cell per column, whereas the cells in layer 3 are acting as
+multiple cells per column. Thus regions in the neocortex near sensory
+input have both first order and variable order memory. The first order
+sequence memory (roughly corresponding to layer 4 neurons) is useful
+in forming representations that are invariant to spatial changes. The
+variable order sequence memory (roughly corresponding to layer 3
+neurons) is useful for inference and prediction of moving images.
+
+In summary, we hypothesize that the algorithms similar to those
+described in this chapter are at work in all layers of neurons in the
+neocortex. The layers in the neocortex vary in significant details
+which make them play different roles related to feed-forward
+vs. feedback, attention, and motor behavior. In regions close to
+sensory input, it is useful to have a layer of neurons performing
+first order memory as this leads to spatial invariance.
+
+At Numenta, we have experimented with first order (single cell per
+column) HTM regions for image recognition problems. We also have
+experimented with variable order (multiple cells per column) HTM
+regions for recognizing and predicting variable order sequences. In
+the future, it would be logical to try to combine these in a single
+region and to extend the algorithms to other purposes. However, we
+believe many interesting problems can be addressed with the equivalent
+of single- layer, multiple-cell-per-column regions, either alone or in
+a hierarchy.

@@ -1,0 +1,122 @@
+\chapter*{Preface}
+\addcontentsline{toc}{chapter}{Preface}
+
+There are many things humans find easy to do that computers are
+currently unable to do. Tasks such as visual pattern recognition,
+understanding spoken language, recognizing and manipulating objects by
+touch, and navigating in a complex world are easy for humans. Yet
+despite decades of research, we have few viable algorithms for
+achieving human-like performance on a computer.
+
+In humans, these capabilities are largely performed by the
+neocortex. Hierarchical Temporal Memory (HTM) is a technology modeled
+on how the neocortex performs these functions. HTM offers the promise
+of building machines that approach or exceed human level performance
+for many cognitive tasks.
+
+This document describes HTM technology. Chapter~\ref{chapter:overview}
+provides a broad overview of HTM, outlining the importance of
+hierarchical organization, sparse distributed representations, and
+learning time-based transitions. Chapter~\ref{chapter:learning}
+describes the HTM cortical learning algorithms in
+detail. Chapters~\ref{chapter:pattern-memory} and ~\ref{chapter:transition-memory}
+provide pseudocode for the HTM learning
+algorithms divided in two parts called pattern memory and transition
+memory. After reading chapters~\ref{chapter:learning} through
+\ref{chapter:transition-memory}, experienced software engineers should
+be able to reproduce and experiment with the algorithms. Hopefully,
+some readers will go further and extend our work.
+
+\subsection*{Intended audience}
+
+This document is intended for a technically educated audience. While
+we don't assume prior knowledge of neuroscience, we do assume you can
+understand mathematical and computer science concepts. We've written
+this document such that it could be used as assigned reading in a
+class. Our primary imagined reader is a student in computer science or
+cognitive science, or a software developer who is interested in
+building artificial cognitive systems that work on the same principles
+as the human brain.  Non-technical readers can still benefit from
+certain parts of the document, particularly
+Chapter~\ref{chapter:overview}: HTM Overview.
+
+\subsection*{Relation to previous documents}
+
+Parts of HTM theory are described in the 2004 book {\em On
+  Intelligence}, in white papers published by Numenta, and in peer
+reviewed papers written by Numenta employees. We don't assume you've
+read any of this prior material, much of which has been incorporated
+and updated in this volume. Note that the HTM learning algorithms
+described in Chapters 2-4 have not been previously published. The new
+algorithms replace our first generation algorithms, called Zeta 1. For
+a short time, we called the new algorithms ``Fixed-density Distributed
+Representations'', or ``FDR'', but we are no longer using this
+terminology. We call the new algorithms the HTM Cortical Learning
+Algorithms, or sometimes just the HTM Learning Algorithms.
+
+We encourage you to read {\em On Intelligence}, written by Numenta
+co-founder Jeff Hawkins with Sandra Blakeslee. Although the book does
+not mention HTM by name, it provides an easy-to-read, non-technical
+explanation of HTM theory and the neuroscience behind it. At the time
+{\em On Intelligence} was written, we understood the basic
+principles underlying HTM but we didn't know how to implement those
+principles algorithmically. You can think of this document as
+continuing the work started in {\em On Intelligence}.
+
+\subsection*{About Numenta}
+
+Numenta, Inc. (www.numenta.com) was formed in 2005 to develop HTM
+technology for both commercial and scientific use. To achieve this
+goal we are fully documenting our progress and discoveries. We also
+publish our software in a form that other people can use for both
+research and commercial development. We have structured our software
+to encourage the emergence of an independent, application developer
+community. Use of Numenta's software and intellectual property is free
+for research purposes. We will generate revenue by selling support,
+licensing software, and licensing intellectual property for commercial
+deployments. We always will seek to make our developer partners
+successful, as well as be successful ourselves.
+
+Numenta is based in Redwood City, California. It is privately funded.
+
+\subsection*{About NuPIC}
+
+In 2013, Numenta created an Open Source project around its Numenta Platform
+for Intelligent Computing (NuPIC) software. The project has attracted many contributions
+and there are now over 1000 subscribers to thw mailing lists. The project is managed
+by Numenta's Matt Taylor. For details, visit http://www.numenta.org
+
+\subsection*{About the authors}
+
+This document is a collaborative effort by the employees of
+Numenta and the NuPIC community. The names of the principal authors for each section are
+listed in the revision history.
+
+\pagebreak
+\subsection*{Revision history}
+
+We note in the table below major changes between versions. Minor
+changes such as small clarifications or formatting changes are not
+noted.
+
+\vspace{5mm}
+\begin{tabular}{|p{0.1\textwidth}|p{0.2\textwidth}|>{\raggedright}p{0.45\textwidth}|>{\raggedright\arraybackslash}p{0.25\textwidth}|}
+\hline
+Version & Date & Changes & Principal Authors \\
+\hline
+0.1 & Nov 9, 2010 & 1. Preface, Chapters 1,2,3,4, and Glossary: first release & Jeff~Hawkins, Subutai~Ahmad, Donna~Dubinsky \\
+\hline
+0.1.1 & Nov 23, 2010 & 1. Chapter 1: the Regions section was edited to clarify terminology, such as levels, columns, and layers & Hawkins \& Dubinsky \\
+ & & 2. Appendix A: first release & Hawkins \\
+\hline
+0.2 & Dec 10, 2010 & 1. Chapter 2: various clarifications & Hawkins \\
+ & & 2. Chapter 4: updated line references; code changes in lines 37 and 39 & Ahmad \\
+ & & 3. Appendix B: first release & Hawkins \\
+\hline
+0.2.1 & Sep 12, 2011 & 1. Read This First: Removed reference to 2010 & \\
+ & & Preface: Removed Software Release section & \\
+\hline
+0.3 & Aug 22, 2014 & 1. Preface, Chapters 1,2,3,4, and Glossary: updates, corrections, new theory & 
+Hawkins, Ahmad (theory), Fergal~Byrne (theory), Chetan~Surpur (algorithms)\\
+\hline
+\end{tabular}

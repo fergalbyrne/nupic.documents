@@ -1,0 +1,425 @@
+\chapter{A Comparison of Layers in the Neocortex and an HTM Region}
+\label{appendix:compare-layer-region}
+
+This appendix describes the relationship between an HTM region and a
+region of the biological neocortex.
+
+Specifically, the appendix covers how the HTM cortical learning
+algorithm, with its columns and cells, relates to the layered and
+columnar architecture of the neocortex. Many people are confused by
+the concept of ``layers'' in the neocortex and how it relates to an
+HTM layer. Hopefully this appendix will resolve this confusion as well
+as provide more insight into the biology underlying the HTM cortical
+learning algorithm.
+
+\section*{Circuitry of the neocortex}
+
+The human neocortex is a sheet of neural tissue approximately 1,000
+cm$^2$ in area and 2 mm thick. To visualize this sheet, think of a
+cloth dinner napkin, which is a reasonable approximation of the area
+and thickness of the neocortex. The neocortex is divided into dozens
+of functional regions, some related to vision, others to audition, and
+others to language, etc. Viewed under a microscope, the physical
+characteristics of the different regions look remarkably similar.
+
+There are several organizing principles seen in each region throughout
+the neocortex.
+
+\begin{figure}
+\resizebox{\textwidth}{!}{\includegraphics{figures/Appendix_B_1.png}}
+\end{figure}
+
+\subsection*{Layers}
+The neocortex is generally said to have six layers. Five of the layers
+contain cells and one layer is mostly connections. The layers were
+discovered over one hundred years ago with the advent of staining
+techniques. The image above (from Cajal) shows a small slice of
+neocortex exposed using three different staining methods. The vertical
+axis spans the thickness of the neocortex, approximately 2 mm. The
+left side of the image indicates the six layers. Layer 1, at the top,
+is the non-cellular level. The ``WM'' at the bottom indicates the
+beginning of the white matter, where axons from cells travel to other
+parts of the neocortex and other parts of the brain.
+
+The right side of the image is a stain that shows only myelinated
+axons.  (Myelination is a fatty sheath that covers some but not all
+axons.) In this part of the image you can see two of the main
+organizing principles of the neocortex, layers and columns. Most axons
+split in two immediately after leaving the body of the neuron. One
+branch will travel mostly horizontally and the other branch will
+travel mostly vertically. The horizontal branch makes a large number
+of connections to other cells in the same or nearby layer, thus the
+layers become visible in stains such as this. Bear in mind that this
+is a drawing of a slice of neocortex. Most of the axons are coming in
+and out of the plane of the image so the axons are longer than they
+appear in the image. It has been estimated that there are between 2
+and 4 kilometers of axons and dendrites in every cubic millimeter of
+neocortex.
+
+The middle section of the image is a stain that shows neuron bodies,
+but does not show any dendrites or axons. You can see that the size
+and density of the neurons also varies by layer. There is only a
+little indication of columns in this particular image. You might
+notice that there are some neurons in layer 1. The number of layer 1
+neurons is so small that the layer is still referred to as a
+non-cellular layer. Neuroscientists have estimated that there is
+somewhere around 100,000 neurons in a cubic millimeter of neocortex.
+
+The left part of the image is a stain that shows the body, axons, and
+dendrites of just a few neurons. You can see that the size of the
+dendrite ``arbors'' varies significantly in cells in different
+layers. Also visible are some ``apical dendrites'' that rise from the
+cell body making connections in other layers. The presence and
+destination of apical dendrites is specific to each layer.
+
+In short, the layered and columnar organization of the neocortex
+becomes evident when the neural tissue is stained and viewed under a
+microscope.
+
+\subsection*{Variations of layers in different regions}
+There is variation in the thickness of the layers in different regions
+of the neocortex and some disagreement over the number of layers. The
+variations depend on what animal is being studied, what region is
+being looked at, and who is doing the looking. For example, in the
+image above, layer 2 and layer 3 look easily distinguished, but
+generally this is not the case. Some scientists report that they
+cannot distinguish the two layers in the regions they study, so often
+layer 2 and layer 3 are grouped together and called ``layer 2/3.''
+Other scientists go the opposite direction, defining sub-layers such
+as 3A and 3B.
+
+
+Layer 4 is most well defined in those neocortical regions which are
+closest to the sensory organs. While in some animals (for example
+humans and monkeys), layer 4 in the first vision region is clearly
+subdivided. In other animals it is not subdivided. Layer 4 mostly
+disappears in regions hierarchically far from the sensory organs.
+
+\subsection*{Columns}
+The second major organizing principle of the neocortex is
+columns. Some columnar organization is visible in stained images, but
+most of the evidence for columns is based on how cells respond to
+different inputs.
+
+When scientists use probes to see what makes neurons become active,
+they find that neurons that are vertically aligned, across different
+layers, respond to roughly the same input.
+
+\begin{figure}
+\resizebox{\textwidth}{!}{\includegraphics{figures/Appendix_B_2.png}}
+\end{figure}
+
+This drawing illustrates some of the response properties of cells in
+V1, the first cortical region to process information from the retina.
+
+One of the first discoveries was that most cells in V1 respond to
+lines or edges at different orientations at specific areas of the
+retina. Cells that are vertically aligned in columns all respond to
+edges with the same orientation. If you look carefully, you will see
+that the drawing shows a set of small lines at different orientations
+arrayed across the top of the section. These lines indicate what line
+orientation cells at that location respond to. Cells that are
+vertically aligned (within the thin vertical stripes) respond to the
+lines of the same orientation.
+
+There are several other columnar properties seen in V1, two of which
+are shown in the drawing. There are ``ocular dominance columns'' where
+cells respond to similar combinations of left and right eye
+influence. And there are ``blobs'' where cells are primarily color
+sensitive. The ocular dominance columns are the larger blocks in the
+diagram. Each ocular dominance column includes a set of orientation
+columns. The ``blobs'' are the dark ovals.
+
+The general rule for neocortex is that several different response
+properties are overlaid on one another, such as orientation and ocular
+dominance. As you move horizontally across the cortical surface, the
+combination of response properties exhibited by cells
+changes. However, vertically aligned neurons share the same set of
+response properties. This vertical alignment is true in auditory,
+visual, and somatosensory areas. There is some debate amongst
+neuroscientists whether this is true everywhere in the neocortex but
+it appears to be true in most areas if not all.
+
+\subsection*{Mini-columns}
+The smallest columnar structure in the neocortex is the
+mini-column. Mini-columns are about 30um in diameter and contain
+80-100 neurons across all five cellular layers. The entire neocortex
+is composed of mini-columns. You can visualize them as tiny pieces of
+spaghetti stacked side by side. There are tiny gaps with few cells
+between the mini-columns sometimes making them visible in stained
+images.
+
+\begin{figure}
+\resizebox{\textwidth}{!}{\includegraphics{figures/Appendix_B_3.png}}
+\end{figure}
+
+On the left is a stained image that shows neuron cell bodies in part
+of a neocortical slice. The vertical structure of mini-columns is
+evident in this image. On the right is a conceptual drawing of a
+mini-column (from Peters and Yilmez). In reality is skinnier than
+this. Note there are multiple neurons in each layer in the column. All
+the neurons in a mini-column will respond to similar inputs. For
+example, in the drawing of a section of V1 shown previously, a
+mini-column will contain cells that respond to lines of a particular
+orientation with a particular ocular dominance preference. The cells
+in an adjacent mini-column might respond to a slightly different line
+orientation or different ocular dominance preference.
+
+Inhibitory neurons play an essential role is defining
+mini-columns. They are not visible in the image or drawing but
+inhibitory neurons send axons in a straight path between mini-columns
+partially giving them their physical separation. The inhibitory
+neurons are also believed to help force all the cells in the
+mini-column to respond to similar inputs.
+
+The mini-column is the prototype for the column used in the HTM
+cortical learning algorithm.
+
+\subsection*{An exception to columnar responses}
+There is a one exception to columnar responses that is relevant to the
+HTM cortical learning algorithms. Usually scientists find what a cell
+responds to by exposing an experimental animal to a simple
+stimulus. For example, they might show an animal a single line in a
+small part of the visual space to determine the response properties of
+cells in V1. When using simple inputs, researchers find that cells
+always will respond to the same input. However, if the simple input is
+embedded in a video of a natural scene, cells become more selective. A
+cell that reliably responds to an isolated vertical line will not
+always respond when the vertical line is embedded in a complex moving
+image of a natural scene.
+
+In the HTM cortical learning algorithm, all HTM cells in a column
+share the same feed-forward response properties, but in a learned
+temporal sequence, only one of the cells in an HTM column becomes
+active. This mechanism is the means of representing variable order
+sequences and is analogous to the property just described for
+neurons. A simple input with no context will cause all the cells in a
+column to become active. The same input within a learned sequence will
+cause just one cell to become active.
+
+We are not suggesting that only one neuron within a mini-column will
+be active at once. The HTM cortical learning algorithm suggests that
+within a column, all the neurons within a layer would be active for an
+unanticipated input and a subset of the neurons would be active for an
+anticipated input.
+
+\section*{Why are there layers and columns?}
+
+No one knows for certain why there are layers and why there are
+columns in the neocortex. HTM theory, however, proposes an answer. The
+HTM cortical learning algorithm shows that a layer of cells organized
+in columns can be a high capacity memory of variable order state
+transitions. Stated more simply, a layer of cells can learn a lot of
+sequences. Columns of cells that share the same feed-forward response
+are the key mechanism for learning variable-order transitions.
+
+This hypothesis explains why columns are necessary, but what about the
+five layers? If a single cortical layer can learn sequences and make
+predictions, why do we see five layers in the neocortex?
+
+We propose that the different layers observed in the neocortex are all
+learning sequences using the same basic mechanism but the sequences
+learned in each layer are used in different ways. There is a lot we
+don't understand about this, but we can describe the general
+idea. Before we do, it will be helpful to describe what the neurons in
+each layer connect to.
+
+\begin{figure}
+\resizebox{\textwidth}{!}{\includegraphics{figures/Appendix_B_4.png}}
+\end{figure}
+
+The above diagram illustrates two neocortical regions and the major
+connections between them. These connections are seen throughout the
+neocortex where two regions project to each other. The box on the left
+represents a cortical region that is hierarchically lower than the
+region (box) on the right, so feed-forward information goes from left
+to right in the diagram. The down arrow projects to other areas of the
+brain. Feedback information goes from right to left. Each region is
+divided into layers. Layers 2 and 3 are shown together as layer 2/3.
+
+The colored lines represent the output of neurons in the different
+layers. These are bundles of axons originating from the neurons in the
+layer. Recall that axons immediately split in two. One branch spreads
+horizontally within the region, primarily within the same layer. Thus
+all the cells in each layer are highly interconnected. The neurons and
+horizontal connections are not shown in the diagram.
+
+There are two feed-forward pathways, a direct path shown in orange and
+an indirect path shown in green. Layer 4 is the primary feed-forward
+input layer and receives input from both feed-forward pathways. Layer
+4 projects to layer 3.
+
+Layer 3 is also the origin of the direct feed-forward pathway. So the
+direct forward pathway is limited to layer 4 and layer 3.
+
+Some feed-forward connections skip layer 4 and go directly to layer
+3. And, as mentioned above, layer 4 disappears in regions far from
+sensory input. At that point, the direct forward pathway is just from
+layer 3 to layer 3 in the next region.
+
+The second feed-forward pathway (shown in green) originates in layer
+5. Layer 3 cells make a connection to layer 5 cells as they pass on
+their way to the next region. After exiting the cortical sheet, the
+axons from layer 5 cells split again. One branch projects to
+sub-cortical areas of the brain that are involved in motor
+generation. These axons are believed to be motor commands (shown as
+the down facing arrow). The other branch projects to a part of the
+brain called the thalamus which acts as a gate. The thalamus either
+passes the information onto the next region or blocks it.
+
+Finally, the primary feedback pathway, shown in yellow, starts in
+layer 6 and projects to layer 1. Cells in layers 2, 3, and 5 connect
+to layer 1 via their apical dendrites (not shown). Layer 6 receives
+input from layer 5.
+
+This description is a limited summary of what is known about layer to
+layer connections. But it is sufficient to understand our hypothesis
+about why there are multiple layers if all the layers are learning
+sequences.
+
+\section*{Hypothesis on what the different layers do}
+
+We propose that layers 3, 4 and 5 are all feed-forward layers and are
+all learning sequences. Layer 4 is learning first order
+sequences. Layer 3 is learning variable order sequences. And layer 5
+is learning variable order sequences with timing. Let's look at each
+of these in more detail.
+
+\subsubsection*{Layer 4}
+It is easy to learn first order sequences using the HTM cortical
+learning algorithm. If we don't force the cells in a column to inhibit
+each other, that is, the cells in a column don't differentiate in the
+context of prior inputs, then first order learning will occur. In the
+neocortex this would likely be accomplished by removing an inhibitory
+effect between cells in the same column. In our computer models of the
+HTM cortical learning algorithm, we just assign one cell per column,
+which produces a similar result.
+
+First order sequences are what are needed to form invariant
+representations for spatial transformations of an input. In vision,
+for example, x-y translation, scale, and rotation are all spatial
+transformations. When an HTM region with first order memory is trained
+on moving objects, it learns that different spatial patterns are
+equivalent. The resulting HTM cells will behave like what are called
+``complex cells'' in the neocortex. The HTM cells will stay active (in
+the predictive state) over a range of spatial transformations.
+
+At Numenta we have done vision experiments that verify this mechanism
+works as expected, and that some spatial invariance is achieved within
+each level. The details of these experiments are beyond the scope of
+this appendix.
+
+Learning first order sequences in layer 4 is consistent with finding
+complex cells in layer 4, and for explaining why layer 4 disappears in
+higher regions of neocortex. As you ascend the hierarchy at some point
+it will no longer be possible to learn further spatial invariances as
+the representations will already be invariant to them.
+
+\subsubsection*{Layer 3}
+Layer 3 is closest to the HTM cortical learning algorithm that we
+described in Chapter 2. It learns variable order sequences and forms
+predictions that are more stable than its input. Layer 3 always
+projects to the next region in the hierarchy and therefore leads to
+increased temporal stability within the hierarchy. Variable order
+sequence memory leads to neurons called ``directionally-tuned complex
+cells'' which are first observed in layer 3. Directionally-tuned
+complex cells differentiate by temporal context, such as a line moving
+left vs. a line moving right.
+
+\subsubsection*{Layer 5}
+The final feed-forward layer is layer 5. We propose that layer 5 is
+similar to layer 3 with three differences. The first difference is
+that layer 5 adds a concept of timing. Layer 3 predicts ``what'' will
+happen next, but it doesn't tell you ``when'' it will happen. However,
+many tasks require timing such as recognizing spoken words in which
+the relative timing between sounds is important. Motor behavior is
+another example; coordinated timing between muscle activations is
+essential. We propose that layer 5 neurons predict the next state only
+after the expected time. There are several biological details that
+support this hypothesis. One is that layer 5 is the motor output layer
+of the neocortex. Another is that layer 5 receives input from layer 1
+that originates in a part of the thalamus (not shown in the
+diagram). We propose that this information is how time is encoded and
+distributed to many cells via a thalamic input to layer 1 (not shown
+in the diagram).
+
+The second difference between layer 3 and layer 5 is that we want
+layer 3 to make predictions as a far into the future as possible,
+gaining temporal stability. The HTM cortical learning algorithm
+described in Chapter 2 does this. In contrast, we only want layer 5 to
+predict the next element (at a specific time). We have not modeled
+this difference but it would naturally occur if transitions were
+always stored with an associated time.
+
+The third difference between layer 3 and layer 5 can be seen in the
+diagram. The output of layer 5 always projects to sub-cortical motor
+centers, and the feed-forward path is gated by the thalamus. The
+output of layer 5 is sometimes passed to the next region and sometimes
+it is blocked. We (and others) propose this gating is related to
+covert attention (covert attention is when you attend to an input
+without motor behavior).
+
+In summary, layer 5 combines specific timing, attention, and motor
+behavior. There are many mysteries relating to how these play
+together. The point we want to make is that a variation of the HTM
+cortical learning algorithm could easily incorporate specific timing
+and justify a separate layer in the cortex.
+
+\subsubsection*{Layer 2 and layer 6}
+Layer 6 is the origin of axons that feed back to lower regions. Much
+less is known about layer 2. As mentioned above, the very existence of
+layer 2 as unique from layer 3 is sometimes debated. We won't have
+further to say about this question now other than to point out that
+layers 2 and 6, like all the other layers, exhibit the pattern of
+massive horizontal connections and columnar response properties, so we
+propose that they, too, are running a variant of the HTM cortical
+learning algorithm.
+
+\subsection*{What does an HTM region correspond to in the neocortex?}
+We have implemented the HTM cortical learning algorithm in two
+flavors, one with multiple cells per column for variable order memory,
+and one with a single cell per column for first order memory. We
+believe these two flavors correspond to layer 3 and layer 4 in the
+neocortex. We have not attempted to combine these two variants in a
+single HTM region.
+
+Although the HTM cortical learning algorithm (with multiple cells per
+column) is closest to layer 3 in the neocortex, we have flexibility in
+our models that the brain doesn't have. Therefore we can create hybrid
+cellular layers that don't correspond to specific neocortical
+layers. For example, in our model we know the order in which synapses
+are formed on dendrite segments. We can use this information to
+extract what is predicted to happen next from the more general
+prediction of all the things that will happen in the future. We can
+probably add specific timing in the same way. Therefore it should be
+possible to create a single layer HTM region that combines the
+functions of layer 3 and layer 5.
+
+\section*{Summary}
+
+
+The HTM cortical learning algorithm embodies what we believe is a
+basic building block of neural organization in the neocortex. It shows
+how a layer of horizontally-connected neurons learns sequences of
+sparse distributed representations. Variations of the HTM cortical
+learning algorithm are used in different layers of the neocortex for
+related, but different purposes.
+
+We propose that feed-forward input to a neocortical region, whether to
+layer 4 or layer 3, projects predominantly to proximal dendrites,
+which with the assistance of inhibitory cells, creates a sparse
+distributed representation of the input. We propose that cells in
+layers 2, 3, 4, 5, and 6 share this sparse distributed
+representation. This is accomplished by forcing all cells in a column
+that spans the layers to respond to the same feed-forward input.
+
+We propose that layer 4 cells, when they are present, use the HTM
+cortical learning algorithm to learn first-order temporal transitions
+which make representations that are invariant to spatial
+transformations. Layer 3 cells use the HTM cortical learning algorithm
+to learn variable-order temporal transitions and form stable
+representations that are passed up the cortical hierarchy. Layer 5
+cells learn variable-order transitions with timing. We don't have
+specific proposals for layer 2 and layer 6. However, due to the
+typical horizontal connectivity in these layers it is likely they,
+too, are learning some form of sequence memory.

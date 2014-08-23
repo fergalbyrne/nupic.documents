@@ -1,0 +1,282 @@
+
+
+\chapter{Transition Memory Implementation and Pseudocode}
+\label{chapter:transition-memory}
+This chapter contains the detailed pseudocode for a first
+implementation of the temporal pooler function. The input to this code
+is activeColumns(t), as computed by the spatial pooler. The code
+computes the active and predictive state for each cell at the current
+timestep, t. The boolean OR of the active and predictive states for
+each cell forms the output of the temporal pooler for the next level.
+
+The pseudocode is split into three distinct phases that occur in sequence:
+\begin{description}
+\item[Phase 1:] compute the active state, activeState(t), for each cell
+\item[Phase 2:] compute the predicted state, predictiveState(t), for each cell
+\item[Phase 3:] update synapses
+\end{description}
+
+\section*{Temporal pooler pseudocode: inference alone}
+
+\subsection*{Phase 1}
+The first phase calculates the active state for each cell. For each
+winning column we determine which cells should become active. If the
+bottom-up input was predicted by any cell (i.e., its predictiveState
+was 1 due to a sequence segment in the previous time step), then those
+cells become active (lines 4--9). If the bottom-up input was unexpected
+(i.e., no cells had predictiveState output on), then each cell in the
+column becomes active (lines 11--13).
+
+Phase 3 is only required for learning. However, unlike spatial
+pooling, Phases 1 and 2 contain some learning-specific operations when
+learning is turned on. Since temporal pooling is significantly more
+complicated than spatial pooling, we first list the inference-only
+version of the temporal pooler, followed by a version that combines
+inference and learning. A description of some of the implementation
+details, terminology, and supporting routines are at the end of the
+chapter, after the pseudocode.
+
+\begin{lstlisting}[numbers=left]
+for c in activeColumns(t)
+
+  buPredicted = false
+  for i = 0 to cellsPerColumn - 1
+    if predictiveState(c, i, t-1) == true then
+      s = getActiveSegment(c, i, t-1, activeState)
+      if s.sequenceSegment == true then
+        buPredicted = true
+        activeState(c, i, t) = 1
+
+  if buPredicted == false then
+    for i = 0 to cellsPerColumn - 1
+      activeState(c, i, t) = 1
+\end{lstlisting}
+
+\subsection*{Phase 2}
+The second phase calculates the predictive state for each cell. A cell
+will turn on its predictiveState if any one of its segments becomes
+active, i.e., if enough of its horizontal connections are currently
+firing due to feed-forward input.
+
+\begin{lstlisting}[numbers=left,firstnumber=14]
+for c, i in cells
+  for s in segments(c, i)
+    if segmentActive(c, i, s, t) then
+      predictiveState(c, i, t) = 1
+\end{lstlisting}
+
+\section*{Temporal pooler pseudocode: combined inference and learning}
+
+\subsection*{Phase 1}
+
+The first phase calculates the activeState for each cell that is in a
+winning column. For those columns, the code further selects one cell
+per column as the learning cell (learnState). The logic is as follows:
+if the bottom-up input was predicted by any cell (i.e., its
+predictiveState output was 1 due to a sequence segment), then those
+cells become active (lines 23--27). If that segment became active from
+cells chosen with learnState on, this cell is selected as the learning
+cell (lines 28--30). If the bottom-up input was not predicted, then
+all cells in the become active (lines 32--34). In addition, the best
+matching cell is chosen as the learning cell (lines 36--41) and a new
+segment is added to that cell.
+
+\begin{lstlisting}[numbers=left,firstnumber=18]
+for c in activeColumns(t)
+
+  buPredicted = false
+  lcChosen = false
+  for i = 0 to cellsPerColumn - 1
+    if predictiveState(c, i, t-1) == true then
+      s = getActiveSegment(c, i, t-1, activeState)
+      if s.sequenceSegment == true then
+        buPredicted = true
+        activeState(c, i, t) = 1
+        if segmentActive(s, t-1, learnState) then
+          lcChosen = true
+          learnState(c, i, t) = 1
+
+  if buPredicted == false then
+    for i = 0 to cellsPerColumn - 1
+      activeState(c, i, t) = 1
+
+  if lcChosen == false then
+    I,s = getBestMatchingCell(c, t-1)
+    learnState(c, i, t) = 1
+    sUpdate = getSegmentActiveSynapses (c, i, s, t-1, true)
+    sUpdate.sequenceSegment = true
+    segmentUpdateList.add(sUpdate)
+\end{lstlisting}
+
+\subsection*{Phase 2}
+
+The second phase calculates the predictive state for each cell. A cell
+will turn on its predictive state output if one of its segments
+becomes active, i.e., if enough of its lateral inputs are currently
+active due to feed-forward input. In this case, the cell queues up the
+following changes: a) reinforcement of the currently active segment
+(lines 47--48), and b) reinforcement of a segment that could have
+predicted this activation, i.e., a segment that has a (potentially
+weak) match to activity during the previous time step (lines 50--53).
+
+\begin{lstlisting}[numbers=left,firstnumber=42]
+for c, i in cells
+  for s in segments(c, i)
+    if segmentActive(s, t, activeState) then
+      predictiveState(c, i, t) = 1
+
+      activeUpdate = getSegmentActiveSynapses(c, i, s, t, false)
+      segmentUpdateList.add(activeUpdate)
+
+      predSegment = getBestMatchingSegment(c, i, t-1)
+      predUpdate = getSegmentActiveSynapses(c, i, predSegment, t-1, true)
+      segmentUpdateList.add(predUpdate)
+\end{lstlisting}
+￼
+\subsection*{Phase 3}
+
+The third and last phase actually carries out learning. In this phase
+segment updates that have been queued up are actually implemented once
+we get feed-forward input and the cell is chosen as a learning cell
+(lines 56--57). Otherwise, if the cell ever stops predicting for any
+reason, we negatively reinforce the segments (lines 58--60).
+
+\begin{lstlisting}[numbers=left,firstnumber=54]￼
+for c, i in cells
+  if learnState(s, i, t) == 1 then
+    adaptSegments (segmentUpdateList(c, i), true)
+    segmentUpdateList(c, i).delete()
+  else if predictiveState(c, i, t) == 0 and predictiveState(c, i, t-1)==1 then
+    adaptSegments (segmentUpdateList(c,i), false)
+    segmentUpdateList(c, i).delete()
+\end{lstlisting}￼
+
+\subsection*{Implementation details and terminology}
+In this section we describe some of the details of our temporal pooler
+implementation and terminology. Each cell is indexed using two
+numbers: a column index, c, and a cell index, i. Cells maintain a list
+of dendrite segments, where each segment contains a list of synapses
+plus a permanence value for each synapse. Changes to a cell's synapses
+are marked as temporary until the cell becomes active from
+feed-forward input. These temporary changes are maintained in
+segmentUpdateList. Each segment also maintains a boolean flag,
+sequenceSegment, indicating whether the segment predicts feed-forward
+input on the next time step.
+
+The implementation of potential synapses is different from the
+implementation in the spatial pooler. In the spatial pooler, the
+complete list of potential synapses is represented as an explicit
+list. In the temporal pooler, each segment can have its own (possibly
+large) list of potential synapses. In practice maintaining a long list
+for each segment is computationally expensive and memory
+intensive. Therefore in the temporal pooler, we randomly add active
+synapses to each segment during learning (controlled by the parameter
+newSynapseCount). This optimization has a similar effect to
+maintaining the full list of potential synapses, but the list per
+segment is far smaller while still maintaining the possibility of
+learning new temporal patterns.
+
+The pseudocode also uses a small state machine to keep track of the
+cell states at different time steps. We maintain three different
+states for each cell. The arrays activeState and predictiveState keep
+track of the active and predictive states of each cell at each time
+step. The array learnState determines which cell outputs are used
+during learning. When an input is unexpected, all the cells in a
+particular column become active in the same time step. Only one of
+these cells (the cell that best matches the input) has its learnState
+turned on. We only add synapses from cells that have learnState set to
+one (this avoids overrepresenting a fully active column in dendritic
+segments).
+
+The following data structures are used in the temporal pooler pseudocode:
+
+\begin{description}
+\item[cell(c,i)] A list of all cells, indexed by i and c.
+\item[cellsPerColumn] Number of cells in each column.
+\item[activeColumns(t)] List of column indices that are winners due to
+  bottom-up input (this is the output of the spatial pooler).
+\item[activeState(c, i, t)] A boolean vector with one number per
+  cell. It represents the active state of the column c cell i at time
+  t given the current feed-forward input and the past temporal
+  context. activeState(c, i, t) is the contribution from column c cell
+  i at time t. If 1, the cell has current feed-forward input as well
+  as an appropriate temporal context.
+\item[predictiveState(c, i, t)] A boolean vector with one number per
+  cell. It represents the prediction of the column c cell i at time t,
+  given the bottom-up activity of other columns and the past temporal
+  context. predictiveState(c, i, t) is the contribution of column c
+  cell i at time t. If 1, the cell is predicting feed-forward input in
+  the current temporal context.
+\item[learnState(c, i, t)] A boolean indicating whether cell i in
+  column c is chosen as the cell to learn on.
+\item[activationThreshold] A boolean indicating whether cell i in
+  column c is chosen as the cell to learn on.
+\item[learningRadius] The area around a temporal pooler cell from
+  which it can get lateral connections.
+\item[initialPerm] Initial permanence value for a synapse.
+\item[connectedPerm] If the permanence value for a synapse is greater
+  than this value, it is said to be connected.
+\item[minThreshold] Minimum segment activity for learning.
+\item[newSynapseCount] The maximum number of synapses added to a
+  segment during learning.
+\item[permanenceInc] Amount permanence values of synapses are
+  incremented when activity-based learning occurs.
+\item[permanenceDec] Amount permanence values of synapses are
+  decremented when activity-based learning occurs.
+\item[segmentUpdate] Data structure holding three pieces of
+  information required to update a given segment: a) segment index (-1
+  if it's a new segment), b) a list of existing active synapses, and
+  c) a flag indicating whether this segment should be marked as a
+  sequence segment (defaults to false).
+\item[segmentUpdateList] A list of segmentUpdate
+  structures. segmentUpdateList(c,i) is the list of changes for cell i
+  in column c.
+\end{description}
+
+The following supporting routines are used in the above code:
+
+\begin{description}
+\item[segmentActive(s, t, state)] This routine returns true if the
+  number of connected synapses on segment s that are active due to the
+  given state at time t is greater than activationThreshold. The
+  parameter state can be activeState, or learnState.
+\item[getActiveSegment(c, i, t, state)] For the given column c cell i,
+  return a segment index such that segmentActive(s,t, state) is
+  true. If multiple segments are active, sequence segments are given
+  preference. Otherwise, segments with most activity are given
+  preference.
+\item[getBestMatchingSegment(c, i, t)] For the given column c cell i
+  at time t, find the segment with the largest number of active
+  synapses. This routine is aggressive in finding the best match. The
+  permanence value of synapses is allowed to be below
+  connectedPerm. The number of active synapses is allowed to be below
+  activationThreshold, but must be above minThreshold. The routine
+  returns the segment index. If no segments are found, then an index
+  of -1 is returned.
+\item[getBestMatchingCell(c)] For the given column, return the cell
+  with the best matching segment (as defined above). If no cell has a
+  matching segment, then return the cell with the fewest number of
+  segments.
+\item[getSegmentActiveSynapses(c, i, t, s, newSynapses=false)] Return
+  a segmentUpdate data structure containing a list of proposed changes
+  to segment s. Let activeSynapses be the list of active synapses
+  where the originating cells have their activeState output = 1 at
+  time step t. (This list is empty if s = -1 since the segment doesn't
+  exist.) newSynapses is an optional argument that defaults to
+  false. If newSynapses is true, then newSynapseCount -
+  count(activeSynapses) synapses are added to activeSynapses. These
+  synapses are randomly chosen from the set of cells that have
+  learnState output = 1 at time step t.
+\item[adaptSegments(segmentList, positiveReinforcement)] This function
+  iterates through a list of segmentUpdate's and reinforces each
+  segment. For each segmentUpdate element, the following changes are
+  performed. If positiveReinforcement is true then synapses on the
+  active list get their permanence counts incremented by
+  permanenceInc. All other synapses get their permanence counts
+  decremented by permanenceDec. If positiveReinforcement is false,
+  then synapses on the active list get their permanence counts
+  decremented by permanenceDec. After this step, any synapses in
+  segmentUpdate that do yet exist get added with a permanence count of
+  initialPerm.
+\end{description}
+
