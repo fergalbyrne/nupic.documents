@@ -2,8 +2,8 @@
 \label{chapter:learning}
 
 This chapter describes the learning algorithms at work inside an HTM
-region. Chapters~\ref{chapter:recognition} and
-\ref{chapter:prediction} describe the implementation of the
+region. Chapters~\ref{chapter:pattern-memory} and
+\ref{chapter:transition-memory} describe the implementation of the
 learning algorithms using pseudocode, whereas this chapter is more
 conceptual.
 
@@ -33,10 +33,11 @@ confusion.
 For the moment, we will model each region as a single layer, which receives 
 a stream of feedforward inputs, recognises spatial patterns, learns sequences
 of these patterns, and makes predictions. In the neocortex, this models the key functions performed 
-in Layer 3. 
+in Layer 3. We call this initial model the ``Sensory CLA.''
 
 In a later chapter, we will use this basic understanding of recognition, sequence learning, and prediction
-to build a more complete sensorimotor temporal memory system.
+to build a more complete sensorimotor temporal memory system. This new theory is called the ``Sensorimotor
+CLA.''
 
 \subsection*{Cell states}
 
@@ -177,7 +178,7 @@ a method described later.
 All these steps (learning the connections to each column from a subset
 of the inputs, determining the level of input to each column, and
 using inhibition to select a sparse set of active columns) is referred
-to as ``Recognition.''
+to as ``Pattern Memory.''
 
 Another term we've used is ``Spatial Pooling'', because patterns that are
 ``spatially'' similar (meaning they share a large number of active
@@ -321,51 +322,54 @@ selects another sparse set of active columns. If a newly active column
 is unexpected, meaning it was not predicted by any cells, it will
 activate all the cells in the columns. If a newly active column has
 one or more predicted cells, only those cells will become active. The
-output of a region is the pattern activity of all cells in the region,
-including the cells active because of feed-forward input and the cells
-active in the predictive state.
+output of a region is the pattern of activity of all cells in the region,
+including the cells active because of feed-forward input, and in particular those cells
+which were predictive of the current input in context.
 
-As mentioned earlier, predictions are not just for the next time
-step. Predictions in an HTM region can be for several time steps into
-the future. Using melodies as example, an HTM region would not just
-predict the next note in a melody, but might predict the next four
-notes. This leads to a desirable property. The output of a region (the
-union of all the active and predicted cells in a region) changes more
-slowly than the input. Imagine the region is predicting the next four
-notes in a melody. We will represent the melody by the letter sequence
-A,B,C,D,E,F,G. After hearing the first two notes, the region
-recognizes the sequence and starts predicting. It predicts
-C,D,E,F. The ``B'' cells are already active so cells for B,C,D,E,F are
-all in one of the two active states. Now the region hears the next
-note ``C.'' The set of active and predictive cells now represents
-``C,D,E,F,G.'' Note that the input pattern changed completely going
-from ``B'' to ``C,'' but only 20\% of the cells changed.
+%As mentioned earlier, predictions are not just for the next time
+%step. Predictions in an HTM region can be for several time steps into
+% the future. Using melodies as example, an HTM region would not just
+% predict the next note in a melody, but might predict the next four
+% notes. This leads to a desirable property. The output of a region (the
+% union of all the active and predicted cells in a region) changes more
+% slowly than the input. Imagine the region is predicting the next four
+% notes in a melody. We will represent the melody by the letter sequence
+% A,B,C,D,E,F,G. After hearing the first two notes, the region
+% recognizes the sequence and starts predicting. It predicts
+% C,D,E,F. The ``B'' cells are already active so cells for B,C,D,E,F are
+% all in one of the two active states. Now the region hears the next
+% note ``C.'' The set of active and predictive cells now represents
+% ``C,D,E,F,G.'' Note that the input pattern changed completely going
+% from ``B'' to ``C,'' but only 20\% of the cells changed.
+
+
 
 \end{enumerate}
 
-Because the output of an HTM region is a vector representing the
-activity of all the region's cells, the output in this example is five
-times more stable than the input. In a hierarchical arrangement of
-regions, we will see an increase in temporal stability as you ascend
-the hierarchy.
+% Because the output of an HTM region is a vector representing the
+% activity of all the region's cells, the output in this example is five
+% times more stable than the input. In a hierarchical arrangement of
+% regions, we will see an increase in temporal stability as you ascend
+% the hierarchy.
 
-We use the term ``temporal pooler'' to describe the two steps of
-adding context to the representation and predicting. By creating
-slowly changing outputs for sequences of patterns, we are in essence
-``pooling'' together different patterns that follow each other in
-time.
+We use the term ``Transition Memory'' to describe the two steps of
+adding context to the representation and making cells predictive. 
+% By creating
+% slowly changing outputs for sequences of patterns, we are in essence
+% ``pooling'' together different patterns that follow each other in
+% time.
 
 Now we will go into another level of detail. We start with concepts
-that are shared by the spatial pooler and temporal pooler. Then we
-discuss concepts and details unique to the spatial pooler followed by
-concepts and details unique to the temporal pooler.
+that are shared by Recognition and Prediction. Then we
+discuss concepts and details unique to Pattern Memory followed by
+concepts and details unique to Transition Memory.
 
 \section*{Shared concepts}
 
-Learning in the spatial pooler and temporal pooler are
+Learning in the Pattern and Transition Memory is
 similar. Learning in both cases involves establishing connections, or
-synapses, between cells. The temporal pooler learns connections
-between cells in the same region. The spatial pooler learns
+synapses, between cells. The Transition Memory learns connections
+between cells in the same region. The Pattern Memory learns
 feed-forward connections between input bits and columns.
 
 \subsection*{Binary weights}

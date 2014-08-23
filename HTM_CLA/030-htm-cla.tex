@@ -178,7 +178,7 @@ a method described later.
 All these steps (learning the connections to each column from a subset
 of the inputs, determining the level of input to each column, and
 using inhibition to select a sparse set of active columns) is referred
-to as ``Recognition.''
+to as ``Pattern Memory.''
 
 Another term we've used is ``Spatial Pooling'', because patterns that are
 ``spatially'' similar (meaning they share a large number of active
@@ -352,7 +352,7 @@ which were predictive of the current input in context.
 % regions, we will see an increase in temporal stability as you ascend
 % the hierarchy.
 
-We use the term ``Prediction'' to describe the two steps of
+We use the term ``Transition Memory'' to describe the two steps of
 adding context to the representation and making cells predictive. 
 % By creating
 % slowly changing outputs for sequences of patterns, we are in essence
@@ -360,16 +360,16 @@ adding context to the representation and making cells predictive.
 % time.
 
 Now we will go into another level of detail. We start with concepts
-that are shared by Recognition and Prediction. Then we
-discuss concepts and details unique to the spatial pooler followed by
-concepts and details unique to the temporal pooler.
+that are shared by both Pattern and Transition Memory. Then we
+discuss concepts and details unique to Pattern Memory followed by
+those unique to Transition Memory.
 
 \section*{Shared concepts}
 
-Learning in the spatial pooler and temporal pooler are
+Learning in the Pattern and Transition Memory is
 similar. Learning in both cases involves establishing connections, or
-synapses, between cells. The temporal pooler learns connections
-between cells in the same region. The spatial pooler learns
+synapses, between cells. The Transition Memory learns connections
+between cells in the same region. The Pattern Memory learns
 feed-forward connections between input bits and columns.
 
 \subsection*{Binary weights}
@@ -392,7 +392,7 @@ segments, proximal and distal.
 \begin{itemize}
 \item A proximal dendrite segment forms synapses with feed-forward
   inputs. The active synapses on this type of segment are linearly
-  summed to determine the feed- forward activation of a column.
+  summed to determine the feed-forward activation potential of a column.
 
 \item A distal dendrite segment forms synapses with cells within the
   region. Every cell has several distal dendrite segments. If the sum
@@ -404,7 +404,8 @@ segments, proximal and distal.
 \end{itemize}
 
 \subsection*{Potential Synapses}
-As mentioned earlier, each dendrite segment has a list of potential synapses. All the potential synapses are given a permanence value and may become functional synapses if their permanence values exceed a threshold.
+As mentioned earlier, each dendrite segment has a list of potential synapses. 
+All the potential synapses are given a permanence value and may become functional synapses if their permanence values exceed a threshold.
 
 \subsection*{Learning}
 Learning involves incrementing or decrementing the permanence values
@@ -417,24 +418,23 @@ modified. Synapses that are active, and therefore contributed to the
 cell being active, have their permanence increased. Synapses that are
 inactive, and therefore did not contribute, have their permanence
 decreased. The exact conditions under which synapse permanence values
-are updated differ in the spatial and temporal pooler. The details are
+are updated differ in the Pattern and Transition Memories. The details are
 described below.
 
-Now we will discuss concepts specific to the spatial and temporal
-pooler functions.
+Now we will discuss concepts specific to the Pattern and Transition Memory functions.
 
-\section*{Spatial pooler concepts}
+\section*{Pattern Memory Concepts}
 
-The most fundamental function of the spatial pooler is to convert a
+The most fundamental function of the Pattern Memory is to convert a
 region's input into a sparse pattern. This function is important
 because the mechanism used to learn sequences and make predictions
 requires starting with sparse distributed patterns.
 
-There are several overlapping goals for the spatial pooler, which
-determine how the spatial pooler operates and learns.
+There are several overlapping goals for the Pattern Memory, which
+determine how it operates and learns.
 
 \begin{enumerate}
-\item {\bf Use all columns}
+\item {\bf Use all columns - Boosting}
 
 An HTM region has a fixed number of columns that learn to represent
 common patterns in the input. One objective is to make sure all the
@@ -449,7 +449,7 @@ input patterns. If a column is not very active, it will become more
 aggressive. When it does, other columns will be forced to modify their
 input and start representing slightly different input patterns.
 
-\item {\bf Maintain desired density}
+\item {\bf Maintain desired density - Inhibition}
 
 A region needs to form a sparse representation of its inputs. Columns
 with the most input inhibit their neighbors. There is a radius of
@@ -511,9 +511,9 @@ forgetting synapses based on their contribution, the ensemble of
 columns will dynamically configure to achieve the desired effect.
 \end{enumerate}
 
-\section*{Spatial pooler details}
+\section*{Pattern Memory details}
 
-We can now go through everything the spatial pooling function does.
+We can now go through everything the Pattern Memory function does.
 
 \begin{enumerate}
 \item Start with an input consisting of a fixed number of bits. These
@@ -548,9 +548,9 @@ We can now go through everything the spatial pooling function does.
   being valid to not valid, and vice-versa.
 \end{enumerate}
 
-\section*{Temporal pooler concepts}
+\section*{Transition Memory Concepts}
 
-Recall that the temporal pooler learns sequences and makes
+Recall that the Transition Memory learns sequences and makes
 predictions. The basic method is that when a cell becomes active, it
 forms connections to other cells that were active just prior. Cells
 can then predict when they will become active by looking at their
@@ -562,7 +562,7 @@ is distributed, the system is robust to noise and error. Individual
 cells can fail, usually with little or no discernible effect.
 
 It is worth noting a few important properties of sparse distributed
-representations that the temporal pooler exploits.
+representations that the Transition Memory exploits.
 
 Assume we have a hypothetical region that always forms representations
 by using 200 active cells out of a total of 10,000 cells (2\% of the
@@ -609,10 +609,10 @@ Now we can see how a cell with one or two dozen dendrite segments and
 a few thousand synapses can recognize hundreds of separate states of
 cell activity.
 
-\section*{Temporal pooler details}
+\section*{Transition Memory details}
 
-Here we enumerate the steps performed by the temporal pooler. We start
-where the spatial pooler left off, with a set of active columns
+Here we enumerate the steps performed by the Transition Memory. We start
+where the Pattern Memory left off, with a set of active columns
 representing the feed-forward input.
 
 \begin{enumerate}
@@ -626,7 +626,7 @@ representing the feed-forward input.
   how many established synapses are connected to active cells. If the
   number exceeds a threshold, that dendrite segment is marked as
   active. Cells with active dendrite segments are put in the
-  predictive state unless they are already active due to feed- forward
+  predictive state unless they are already active due to feed-forward
   input. Cells with no active dendrites and not active due to
   bottom-up input become or remain inactive. The collection of cells
   now in the predictive state is the prediction of the region.
@@ -664,14 +664,13 @@ representing the feed-forward input.
 
 Note that only cells that are active due to feed-forward input
 propagate activity {\em within} the region, otherwise predictions
-would lead to further predictions. But all the active cells
-(feed-forward and predictive) form the output of a region and
+would lead to further predictions. The active cells form the output of a region and
 propagate to the {\em next} region in the hierarchy.
 
 \section*{First order versus variable order sequences and prediction}
 
 There is one more major topic to discuss before we end our discussion
-on the spatial and temporal poolers. It may not be of interest to all
+on the Pattern and Transition Memory. It may not be of interest to all
 readers and it is not needed to understand Chapters 3 and 4.
 % TODO: chapter references
 
@@ -692,7 +691,7 @@ A variable order prediction is not based solely on what is currently
 happening, but on varying amounts of past context. An HTM region is a
 variable order memory.
 
-If we increase to five cells per column, the available number of
+If we increase to 5 cells per column, the available number of
 encodings of any particular input in our example would increase to
 $5^{100}$, a huge increase over $4^{100}$. But both these numbers are
 so large that for many practical problems the increase in capacity
