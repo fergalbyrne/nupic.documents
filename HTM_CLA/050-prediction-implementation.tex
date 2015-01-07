@@ -3,11 +3,11 @@
 \chapter{Transition Memory Implementation and Pseudocode}
 \label{chapter:transition-memory}
 This chapter contains the detailed pseudocode for a first
-implementation of the temporal pooler function. The input to this code
-is activeColumns(t), as computed by the spatial pooler. The code
+implementation of the Transition Memory function. The input to this code
+is activeColumns(t), as computed by the Pattern Memory. The code
 computes the active and predictive state for each cell at the current
 timestep, t. The boolean OR of the active and predictive states for
-each cell forms the output of the temporal pooler for the next level.
+each cell forms the output of the Transition Memory for the next level.
 
 The pseudocode is split into three distinct phases that occur in sequence:
 \begin{description}
@@ -16,7 +16,7 @@ The pseudocode is split into three distinct phases that occur in sequence:
 \item[Phase 3:] update synapses
 \end{description}
 
-\section*{Temporal pooler pseudocode: inference alone}
+\section*{Transition Memory pseudocode: inference alone}
 
 \subsection*{Phase 1}
 The first phase calculates the active state for each cell. For each
@@ -31,7 +31,7 @@ Phase 3 is only required for learning. However, unlike spatial
 pooling, Phases 1 and 2 contain some learning-specific operations when
 learning is turned on. Since temporal pooling is significantly more
 complicated than spatial pooling, we first list the inference-only
-version of the temporal pooler, followed by a version that combines
+version of the Transition Memory, followed by a version that combines
 inference and learning. A description of some of the implementation
 details, terminology, and supporting routines are at the end of the
 chapter, after the pseudocode.
@@ -65,7 +65,7 @@ for c, i in cells
       predictiveState(c, i, t) = 1
 \end{lstlisting}
 
-\section*{Temporal pooler pseudocode: combined inference and learning}
+\section*{Transition Memory pseudocode: combined inference and learning}
 
 \subsection*{Phase 1}
 
@@ -152,24 +152,22 @@ for c, i in cells
 \end{lstlisting}￼
 
 \subsection*{Implementation details and terminology}
-In this section we describe some of the details of our temporal pooler
+In this section we describe some of the details of our Transition Memory
 implementation and terminology. Each cell is indexed using two
 numbers: a column index, c, and a cell index, i. Cells maintain a list
 of dendrite segments, where each segment contains a list of synapses
 plus a permanence value for each synapse. Changes to a cell's synapses
 are marked as temporary until the cell becomes active from
 feed-forward input. These temporary changes are maintained in
-segmentUpdateList. Each segment also maintains a boolean flag,
-sequenceSegment, indicating whether the segment predicts feed-forward
-input on the next time step.
+segmentUpdateList. 
 
 The implementation of potential synapses is different from the
-implementation in the spatial pooler. In the spatial pooler, the
+implementation in the Pattern Memory. In the Pattern Memory, the
 complete list of potential synapses is represented as an explicit
-list. In the temporal pooler, each segment can have its own (possibly
+list. In the Transition Memory, each segment can have its own (possibly
 large) list of potential synapses. In practice maintaining a long list
 for each segment is computationally expensive and memory
-intensive. Therefore in the temporal pooler, we randomly add active
+intensive. Therefore in the Transition Memory, we randomly add active
 synapses to each segment during learning (controlled by the parameter
 newSynapseCount). This optimization has a similar effect to
 maintaining the full list of potential synapses, but the list per
@@ -188,13 +186,13 @@ turned on. We only add synapses from cells that have learnState set to
 one (this avoids overrepresenting a fully active column in dendritic
 segments).
 
-The following data structures are used in the temporal pooler pseudocode:
+The following data structures are used in the Transition Memory pseudocode:
 
 \begin{description}
 \item[cell(c,i)] A list of all cells, indexed by i and c.
 \item[cellsPerColumn] Number of cells in each column.
 \item[activeColumns(t)] List of column indices that are winners due to
-  bottom-up input (this is the output of the spatial pooler).
+  bottom-up input (this is the output of the Pattern Memory).
 \item[activeState(c, i, t)] A boolean vector with one number per
   cell. It represents the active state of the column c cell i at time
   t given the current feed-forward input and the past temporal
@@ -211,7 +209,7 @@ The following data structures are used in the temporal pooler pseudocode:
   column c is chosen as the cell to learn on.
 \item[activationThreshold] A boolean indicating whether cell i in
   column c is chosen as the cell to learn on.
-\item[learningRadius] The area around a temporal pooler cell from
+\item[learningRadius] The area around a Transition Memory cell from
   which it can get lateral connections.
 \item[initialPerm] Initial permanence value for a synapse.
 \item[connectedPerm] If the permanence value for a synapse is greater

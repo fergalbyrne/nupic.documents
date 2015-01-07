@@ -2,13 +2,12 @@
 \label{chapter:pattern-memory}
 
 This chapter contains the detailed pseudocode for a first
-implementation of the spatial pooler function. The input to this code
+implementation of the Pattern Memory function. The input to this code
 is an array of bottom-up binary inputs from sensory data or the
 previous level. The code computes activeColumns(t) --- the list of
 columns that win due to the bottom-up input at time t. This list is
-then sent as input to the temporal pooler routine described in the
-next chapter, i.e., activeColumns(t) is the output of the spatial
-pooling routine.
+then sent as input to the Transition Memory routine described in the
+next chapter, i.e., activeColumns(t) is the output of the Pattern Memory routine.
 
 The pseudocode is split into three distinct phases that occur in
 sequence:
@@ -19,7 +18,7 @@ sequence:
 \item[Phase 3:] update synapse permanence and internal variables
 \end{description}
 
-Although spatial pooler learning is inherently online, you can turn
+Although Pattern Memory learning is inherently online, you can turn
 off learning by simply skipping Phase 3.
 
 The rest of the chapter contains the pseudocode for each of the three
@@ -131,7 +130,7 @@ The following variables and data structures are used in the pseudocode:
 \item[columns] List of all columns.
 \item[input(t,j)] The input to this level at time t. input(t, j) is 1
   if the j'th input is on.
-\item[overlap(c)] The spatial pooler overlap of column c with a
+\item[overlap(c)] The Pattern Memory overlap of column c with a
   particular input pattern.
 \item[activeColumns(t)] List of column indices that are winners due to
   bottom-up input.

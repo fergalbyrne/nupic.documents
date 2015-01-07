@@ -74,7 +74,9 @@ functionality, though in biology there is no equivalent to a dendrite
 segment attached to a column.
 
 Some implementations of HTM have re-introduced the per-cell proximal 
-dendrites.
+dendrites. The new Sensorimotor CLA theory uses both the per-cell and per-column
+models of proximal dendrites (the latter being due to fast inhibitory cells 
+surrounding the column and responding to similar inputs).
 
 \subsection*{Synapses}
 
@@ -639,15 +641,7 @@ representing the feed-forward input.
   cells. These changes to synapse permanence are marked as temporary.
   This modifies the synapses on segments that are already trained
   sufficiently to make the segment active, and thus lead to a
-  prediction. However, we always want to extend predictions further
-  back in time if possible. Thus, we pick a second dendrite segment on
-  the same cell to train. For the second segment we choose the one
-  that best matches the state of the system in the previous time
-  step. For this segment, using the state of the system in the
-  previous time step, increase the permanence of those synapses that
-  are connected to active cells and decrement the permanence of those
-  synapses connected to inactive cells. These changes to synapse
-  permanence are marked as temporary.
+  prediction. 
 
 \item Whenever a cell switches from being inactive to active due to
   feed-forward input, we traverse each potential synapse associated
