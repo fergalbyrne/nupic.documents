@@ -1,0 +1,111 @@
+% TODO: figures and chapters need independent label indexing
+
+\documentclass{report}
+\usepackage{array}
+\usepackage{listings}
+\usepackage{graphics}
+\usepackage{setspace}
+\usepackage{amsmath}
+
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+
+\newlength{\drop}
+
+\newcommand*{\titleHTMmath}{\begingroup%
+\drop=0.08\textheight
+\vspace*{\drop}
+\begin{center}
+{\Large Mathematics of\par}
+{\Large Hierarchical Temporal Memory\par}
+\vfill
+{\Large Version 1.0, 14th April, 2015\par}
+{\Large \textcopyright{} Numenta, Inc. 2011\par}
+{\Large \textcopyright{} Numenta and the NuPIC Community 2014\par}
+\end{center}
+\vfill
+\endgroup}
+
+
+\begin{document}
+\lstset{language=Python}        % TODO: good choice for pseudocode
+
+
+% TODO: Numenta logo
+
+\pagestyle{empty}
+\titleHTMCLA
+
+Use of Numenta's software and intellectual property, including the
+ideas contained in this document, are free for non-commercial research
+purposes. For details, see
+http://www.numenta.com/about-numenta/licensing.php.
+
+\clearpage
+
+\subsection*{Read This First!}
+
+This is a draft version of this document. There are several things
+missing that you should be aware of.
+
+\subsection*{What IS in this document:}
+This document describes in detail new algorithms for learning and
+prediction developed by Numenta. The new algorithms are described in
+sufficient detail that a programmer can understand and implement them
+if desired. It starts with an introductory chapter. If you have been
+following Numenta and have read some of our past white papers, the
+material in the introductory chapter will be familiar. The other
+material is new.
+
+There are several topics related to the implementation of these new
+algorithms that did not make it into this early draft.
+
+\subsection*{What is NOT in this document:}
+
+\begin{itemize}
+
+\item Although most aspects of the algorithms have been implemented
+and tested in software, none of the test results are currently
+included.
+
+\item The algorithms are capable of on-line learning. A few details
+needed to fully implement on-line learning in some rarer cases are not
+described.
+
+\end{itemize}
+
+We are making this document available in its current form because we
+think the algorithms will be of interest to others. The missing
+components of the document should not impede understanding and
+experimenting with the algorithms by motivated researchers. We will
+revise this document regularly to reflect our progress.
+
+\tableofcontents
+
+% Table of Contents
+% Preface 4
+% Chapter 1: HTM Overview 7
+% Chapter 2: HTM Cortical Learning Algorithms 19
+% Chapter 3: Spatial Pooling Implementation and Pseudocode 34
+% Chapter 4: Temporal Pooling Implementation and Pseudocode 39
+% Appendix A: A Comparison between Biological Neurons 47 and HTM Cells
+% Appendix B: A Comparison of Layers in the Neocortex and 54 an HTM Region
+% Glossary 65
+
+\input{010-preface.tex}
+\input{020-htm-overview.tex}
+\input{030-htm-cla.tex}
+\input{040-recognition-implementation.tex}
+\input{050-prediction-implementation.tex}
+\input{055-sensorimotor-cla.tex}
+
+\appendix
+
+\input{060-neurons-vs-htm-cells.tex}
+\input{070-layers-vs-htm-regions.tex}
+\input{080-glossary.tex}
+
+
+\end{document}
+
